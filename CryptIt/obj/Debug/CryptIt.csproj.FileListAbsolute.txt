@@ -1,0 +1,13 @@
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\bin\Debug\CryptIt.exe.config
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\bin\Debug\CryptIt.exe
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\bin\Debug\CryptIt.pdb
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\CryptIt.csprojResolveAssemblyReference.cache
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\View\MainWindow.baml
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\View\MainWindow.g.cs
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\App.g.cs
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\CryptIt_MarkupCompile.cache
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\CryptIt.g.resources
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\CryptIt.Properties.Resources.resources
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\CryptIt.csproj.GenerateResource.Cache
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\CryptIt.exe
+C:\Users\DA\Documents\Visual Studio 2013\Projects\CryptIt\CryptIt\obj\Debug\CryptIt.pdb
