@@ -8,6 +8,6 @@ namespace CryptIt.Model
 {
     public class User
     {
-        private int Id { get; set; }
+        public int Id { get; set; }
     }
 }
