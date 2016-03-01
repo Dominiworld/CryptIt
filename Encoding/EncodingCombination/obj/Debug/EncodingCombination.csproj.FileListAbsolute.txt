@@ -1,0 +1,6 @@
+C:\Users\noxed\Desktop\Encoding\EncodingCombination\bin\Debug\EncodingCombination.exe.config
+C:\Users\noxed\Desktop\Encoding\EncodingCombination\bin\Debug\EncodingCombination.exe
+C:\Users\noxed\Desktop\Encoding\EncodingCombination\bin\Debug\EncodingCombination.pdb
+C:\Users\noxed\Desktop\Encoding\EncodingCombination\obj\Debug\EncodingCombination.exe
+C:\Users\noxed\Desktop\Encoding\EncodingCombination\obj\Debug\EncodingCombination.pdb
+C:\Users\noxed\Desktop\Encoding\EncodingCombination\obj\Debug\EncodingCombination.csprojResolveAssemblyReference.cache

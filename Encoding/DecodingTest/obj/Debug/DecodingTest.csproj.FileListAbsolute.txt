@@ -1,0 +1,6 @@
+C:\Users\noxed\Desktop\Encoding\DecodingTest\bin\Debug\DecodingTest.exe.config
+C:\Users\noxed\Desktop\Encoding\DecodingTest\bin\Debug\DecodingTest.exe
+C:\Users\noxed\Desktop\Encoding\DecodingTest\bin\Debug\DecodingTest.pdb
+C:\Users\noxed\Desktop\Encoding\DecodingTest\obj\Debug\DecodingTest.exe
+C:\Users\noxed\Desktop\Encoding\DecodingTest\obj\Debug\DecodingTest.pdb
+C:\Users\noxed\Desktop\Encoding\DecodingTest\obj\Debug\DecodingTest.csprojResolveAssemblyReference.cache
