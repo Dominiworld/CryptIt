@@ -1,7 +1,7 @@
 ﻿<Application x:Class="CryptIt.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="View/MainView.xaml">
+             StartupUri="View/LogInView.xaml">
     <Application.Resources>
          
     </Application.Resources>

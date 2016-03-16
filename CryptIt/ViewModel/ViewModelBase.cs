@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace CryptIt.ViewModel
@@ -17,6 +18,16 @@ namespace CryptIt.ViewModel
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        public event EventHandler ClosingRequest;
+
+        protected void OnClosingRequest()
+        {
+            if (this.ClosingRequest != null)
+            {
+                this.ClosingRequest(this, EventArgs.Empty);
             }
         }
 

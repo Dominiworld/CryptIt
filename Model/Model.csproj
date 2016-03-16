@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LongPollConnectionSettings.cs" />
+    <Compile Include="LongPoolServerResponse.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MessageInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

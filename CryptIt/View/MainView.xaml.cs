@@ -1,38 +1,29 @@
 ﻿using System;
-using System.Web;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Navigation;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using CryptIt.ViewModel;
-using vkAPI;
 
 namespace CryptIt.View
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainView
+    public partial class MainView : Window
     {
-
         public MainView()
         {
             InitializeComponent();
             DataContext = new MainViewModel();
-        }
-
-        private void Authorize(object sender, RoutedEventArgs e)
-        {
-            var model = DataContext as MainViewModel;
-            if (model!=null)
-            {
-                WebBrowser.Navigate(new Uri(model.AuthorizeUrl));
-            }         
-        }
-
-        private void WebBrowser_OnNavigated(object sender, NavigationEventArgs e)
-        {          
-            var urlParams = HttpUtility.ParseQueryString(e.Uri.Fragment.Substring(1));
-            AuthorizeService.Instance.AccessToken = urlParams.Get("access_token");
-            AuthorizeService.Instance.CurrentUserId = urlParams.Get("user_id");       
         }
     }
 }

@@ -16,6 +16,11 @@ namespace Model
         public string PhotoUrl { get; set; }
         [JsonProperty("online")]
         public int Online { get; set; }
-        public IEnumerable<User> Friends { get; set; }        
+        public IEnumerable<User> Friends { get; set; }
+
+        public string FullName
+        {
+            get { return FirstName + " " + LastName; }
+        }
     }
 }

@@ -9,15 +9,12 @@ namespace vkAPI
 {
     public class BaseService
     {
-        protected JObject GetUrl(string url)
+        protected async Task<JObject> GetUrl(string url)
         {
-            
-
             using (var client = new System.Net.WebClient())
             {
                 client.Encoding = Encoding.UTF8;
-                var response = client.DownloadString(url);
-                Console.WriteLine(response);
+                var response = await client.DownloadStringTaskAsync(url);
                 return JObject.Parse(response);
             }
         }
