@@ -26,6 +26,7 @@ namespace Model
         public bool Out { get; set;  } //0-полученное, 1-отправленное
         [JsonProperty("body")]
         public string Body { get; set; } //принятое сообщение
+        public bool IsNotRead { get; set; }
 
     }
 }

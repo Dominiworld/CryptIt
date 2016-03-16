@@ -5,6 +5,7 @@ namespace Model
 {
     public class User
     {
+
         [JsonProperty("id")]
         public int Id { get; set; }
 
@@ -15,7 +16,21 @@ namespace Model
         [JsonProperty("photo_50")]
         public string PhotoUrl { get; set; }
         [JsonProperty("online")]
-        public int Online { get; set; }
+        private int Online { get; set; }
+
+        public string Status
+        {
+            get
+            {
+                if (Online==0)
+                {
+                    return "";
+                }
+                return "Online";
+            }
+          
+        }
+
         public IEnumerable<User> Friends { get; set; }
 
         public string FullName

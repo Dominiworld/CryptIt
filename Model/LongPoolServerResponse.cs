@@ -13,6 +13,6 @@ namespace Model
        [JsonProperty("ts")]
        public int Ts { get; set; }
        [JsonProperty("updates")]
-       public string[] Updates { get; set; }
+       public List<List<object>> Updates { get; set; }
     }
 }

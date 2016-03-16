@@ -21,7 +21,8 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding FullName}"/>
-                            </GridView.Columns>
+                        <GridViewColumn DisplayMemberBinding="{Binding Status}"/>
+                    </GridView.Columns>
                            
                     </GridView>
                 </ListView.View>
@@ -35,15 +36,18 @@
             </Grid.RowDefinitions>
             <TextBlock Text ="{Binding SelectedUser.FullName}"></TextBlock>
             <ListView Grid.Row="1" ItemsSource="{Binding Messages}" >
+               
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>
                             <Image Source="{Binding User.PhotoUrl}" />
                             <TextBlock Text="{Binding User.FullName}"/>
                             <TextBlock Text="{Binding Body}"/>
+                            <TextBlock Text="{Binding Date}"/>
+                            <TextBlock Text="{Binding IsNotRead}"/> <!--сделать конвертер-->
                         </StackPanel>
                     </DataTemplate>
-                </ListView.ItemTemplate>                   
+                </ListView.ItemTemplate>   
             </ListView>
             <TextBox Grid.Row="2" Text="{Binding Message}"></TextBox>
             <Button Grid.Row="3" Content="Отправить" Command="{Binding SendMessageCommand}"/>

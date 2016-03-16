@@ -18,8 +18,9 @@ namespace vkAPI
         {      
             using (var client = new System.Net.WebClient())
             {
+                var token = AuthorizeService.Instance.AccessToken;
                 var url =
-                    "https://api.vk.com/method/users.get?user_id=" + id + "&v=5.45&fields=photo_50";
+                    "https://api.vk.com/method/users.get?user_id=" + id + "&v=5.45&fields=photo_50,online&access_token="+token;
                 var obj = await GetUrl(url);
                 return JsonConvert.DeserializeObject<User>(obj["response"][0].ToString());
             }

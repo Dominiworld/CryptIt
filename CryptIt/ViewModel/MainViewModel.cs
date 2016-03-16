@@ -26,8 +26,25 @@ namespace CryptIt.ViewModel
         {
             _messageService = new MessageService();
             _userService = new UserService();
+            _messageService.GotNewMessageEvent += RefreshMessages;
+            _messageService.ConnectToLongPollServer();
+
             SendMessageCommand = new DelegateCommand(SendMessage);
             GetFriends();
+        }
+
+        private async void RefreshMessages(Message message)
+        {
+            if (message.UserId == SelectedUser.Id)
+            {
+                message.User = message.Out ? AuthorizeService.Instance.CurrentUser : SelectedUser;
+                var messages = new List<Message>
+                {
+                    message
+                };
+                messages.AddRange(Messages);
+                Messages = messages;
+            }
         }
 
         public DelegateCommand SendMessageCommand { get; set; }
@@ -41,8 +58,6 @@ namespace CryptIt.ViewModel
             //todo обработка потери соединения
            _messageService.SendMessage(SelectedUser.Id, Message);           
            Message = String.Empty;
-            var message = await _messageService.ConnectToLongPollServer(true, true);
-            Messages.Add(message);
         }
 
         public string Message
