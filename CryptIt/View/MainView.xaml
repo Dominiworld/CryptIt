@@ -1,7 +1,9 @@
 ﻿<Window x:Class="CryptIt.View.MainView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainView" Height="300" Width="300">
+        xmlns:converters="clr-namespace:CryptIt.Converters"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        Title="MainView" Height="500" Width="700">
     
 
     <Grid>
@@ -9,9 +11,11 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        
             <ListView ItemsSource="{Binding Friends}" SelectedItem="{Binding SelectedUser}">
                 <ListView.View>
                         <GridView>
+                            
                             <GridView.Columns>
                                  <GridViewColumn>
                                 <GridViewColumn.CellTemplate>
@@ -34,23 +38,42 @@
                 <RowDefinition Height="4*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBlock Text ="{Binding SelectedUser.FullName}"></TextBlock>
-            <ListView Grid.Row="1" ItemsSource="{Binding Messages}" >
-               
+            <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}"></TextBlock>
+            <ListView Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" >
+               <ListView.Resources>
+                    <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
+                </ListView.Resources>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Background" Value="{Binding IsNotRead, Converter={StaticResource UnreadToColorConverter}}"></Setter>
+                                </Style>
+                            </StackPanel.Style>
                             <Image Source="{Binding User.PhotoUrl}" />
                             <TextBlock Text="{Binding User.FullName}"/>
                             <TextBlock Text="{Binding Body}"/>
                             <TextBlock Text="{Binding Date}"/>
-                            <TextBlock Text="{Binding IsNotRead}"/> <!--сделать конвертер-->
+                            <TextBlock Text="{Binding IsNotRead}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>   
+               
             </ListView>
             <TextBox Grid.Row="2" Text="{Binding Message}"></TextBox>
-            <Button Grid.Row="3" Content="Отправить" Command="{Binding SendMessageCommand}"/>
+            <StackPanel Grid.Row="3">
+                <StackPanel.Resources>
+                    <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
+                </StackPanel.Resources>
+                <Button  Content="Отправить" Command="{Binding SendMessageCommand}"/>
+                <StackPanel Orientation="Horizontal">
+                     <TextBlock Width="190" Height="25" Margin="5,10" Text="{Binding FileToUpload.FileName, UpdateSourceTrigger = PropertyChanged}"/>
+                    <Button Content="Выбрать файл" Margin="5,10" Width="97" Height="30" Command="{Binding UploadFileCommand}"/>
+                    <Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Visibility="{Binding IsFileUploading, Converter={StaticResource BooleanToVisibilityConverter}}"></Image>
+                </StackPanel>
+               
+            </StackPanel>
         </Grid>
         
        
