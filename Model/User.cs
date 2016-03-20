@@ -16,7 +16,7 @@ namespace Model
         [JsonProperty("photo_50")]
         public string PhotoUrl { get; set; }
         [JsonProperty("online")]
-        private int Online { get; set; }
+        public int Online { get; set; }
 
         public string Status
         {
@@ -28,14 +28,12 @@ namespace Model
                 }
                 return "Online";
             }
-          
+
+            set { throw new System.NotImplementedException(); }
         }
 
         public IEnumerable<User> Friends { get; set; }
 
-        public string FullName
-        {
-            get { return FirstName + " " + LastName; }
-        }
+        public string FullName => FirstName + " " + LastName;
     }
 }
