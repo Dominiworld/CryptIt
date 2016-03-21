@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Model;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace vkAPI
 {
@@ -18,20 +19,18 @@ namespace vkAPI
             _userService = new UserService();
         }
 
-        public async Task<IEnumerable<Message>>GetDialogs()
-        {
-            var token = AuthorizeService.Instance.AccessToken;
-            var url = "https://api.vk.com/method/messages.getDialogs?v=5.45&access_token="+token;
-            var obj = await GetUrl(url);
-            var json =
-                JsonConvert.DeserializeObject<IEnumerable<Message>>(obj["response"]["items"].ToString());
-
-            foreach (var messageInfo in json.ToArray())
-            {
-                messageInfo.User =  await _userService.GetUser(messageInfo.UserId);
-            }
-            return json;
-        }
+        //public async Task<IEnumerable<Message>>GetDialogs(bool onlyUnread)
+        //{
+        //    var token = AuthorizeService.Instance.AccessToken;
+        //    var unread = onlyUnread ? 1 : 0;
+        //    var url = $"https://api.vk.com/method/messages.getDialogs?v=5.45&access_token={token}&unread={unread}";
+        //    var obj = JsonConvert.DeserializeObject((await GetUrl(url)).ToString()) as JObject;
+        //    var items = obj?["response"]?["items"].ToList();
+        //    if (items != null)
+        //    {
+                
+        //    }
+        //}
 
         public async Task<IEnumerable<Message>> GetDialog(int userId)
         {

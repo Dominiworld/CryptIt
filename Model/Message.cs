@@ -27,6 +27,7 @@ namespace Model
         [JsonProperty("body")]
         public string Body { get; set; } //принятое сообщение
         public bool IsNotRead { get; set; }
+        
 
     }
 }

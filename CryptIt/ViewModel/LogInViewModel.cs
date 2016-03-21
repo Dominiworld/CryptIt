@@ -29,7 +29,6 @@ namespace CryptIt.ViewModel
             
             
             AuthorizeUrl = AuthorizeService.Instance.GetAuthorizeUrl(5296011);
-            GetDialogsCommand = new DelegateCommand(GetDialogs); 
             AuthorizeCommand = new DelegateCommand(Authorize);
         }
 
@@ -42,13 +41,6 @@ namespace CryptIt.ViewModel
 
         }
 
-        private void GetDialogs()
-        {
-           var dialogs =  _messageService.GetDialogs();
-            var friends = _userService.GetFriends(AuthorizeService.Instance.CurrentUserId);
-        }
-
-        public DelegateCommand GetDialogsCommand { get; set; }
         public DelegateCommand AuthorizeCommand { get; set; }
 
         public string AuthorizeUrl

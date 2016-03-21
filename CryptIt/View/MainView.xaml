@@ -4,20 +4,29 @@
         xmlns:converters="clr-namespace:CryptIt.Converters"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         Title="MainView" Height="500" Width="700">
-    
+    <Window.InputBindings>
+        <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
+    </Window.InputBindings>
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        
-            <ListView ItemsSource="{Binding Friends}" SelectedItem="{Binding SelectedUser}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <TextBox Text ="{Binding SearchString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Width="350" />
+            </StackPanel>
+             <ListView Grid.Row="1" ItemsSource="{Binding FoundFriends}" SelectedItem="{Binding SelectedUser}">
                 <ListView.View>
-                        <GridView>
-                            
-                            <GridView.Columns>
-                                 <GridViewColumn>
+                    <GridView>
+                        <GridView.Columns>
+                                 <GridViewColumn Width="50">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <Image Source="{Binding PhotoUrl}" />
@@ -25,12 +34,16 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding FullName}"/>
-                        <GridViewColumn DisplayMemberBinding="{Binding Status}"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Status, UpdateSourceTrigger=PropertyChanged}"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding NumberOfNewMessages, UpdateSourceTrigger=PropertyChanged}"/>
                     </GridView.Columns>
                            
                     </GridView>
                 </ListView.View>
             </ListView>
+        </Grid>
+        
+           
         <Grid Grid.Column="1">
            <Grid.RowDefinitions>
                <RowDefinition Height="1*"></RowDefinition>
@@ -61,7 +74,7 @@
                 </ListView.ItemTemplate>   
                
             </ListView>
-            <TextBox Grid.Row="2" Text="{Binding Message}"></TextBox>
+            <TextBox Grid.Row="2" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
             <StackPanel Grid.Row="3">
                 <StackPanel.Resources>
                     <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>

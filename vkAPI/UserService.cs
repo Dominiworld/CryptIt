@@ -28,7 +28,7 @@ namespace vkAPI
 
         public async Task<IEnumerable<User>> GetFriends(int userId)//only ids
         {
-            var url = "https://api.vk.com/method/friends.get?user_id=" + userId + "&fields=nickname,photo_50,online&v=5.45";
+            var url = $"https://api.vk.com/method/friends.get?user_id={userId}&fields=nickname,photo_50,online&v=5.45";
             var obj = await GetUrl(url);
             return JsonConvert.DeserializeObject<IEnumerable<User>>(obj["response"]["items"].ToString());
         }

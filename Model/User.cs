@@ -1,10 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Model.Annotations;
 using Newtonsoft.Json;
 
 namespace Model
 {
-    public class User
+    public class User: INotifyPropertyChanged
     {
+        private int? _numberOfNewMessages;
 
         [JsonProperty("id")]
         public int Id { get; set; }
@@ -28,12 +32,28 @@ namespace Model
                 }
                 return "Online";
             }
-
-            set { throw new System.NotImplementedException(); }
         }
 
         public IEnumerable<User> Friends { get; set; }
 
         public string FullName => FirstName + " " + LastName;
+
+        public int? NumberOfNewMessages
+        {
+            get { return _numberOfNewMessages; }
+            set
+            {
+                _numberOfNewMessages = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

@@ -32,6 +32,8 @@ namespace CryptIt.ViewModel
         private string _message;
         private UploadFile _fileToUpload;
         private bool _isFileUploading;
+        private List<User> _foundFriends;
+        private string _searchString;
 
 
         public MainViewModel()
@@ -60,6 +62,41 @@ namespace CryptIt.ViewModel
             }
         }
 
+        public List<User> FoundFriends
+        {
+            get
+            {
+                return _foundFriends;
+            }
+            set
+            {
+                _foundFriends = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private void SearchFriends()
+        {
+            if (string.IsNullOrEmpty(SearchString))
+            {
+                FoundFriends = Friends;
+            }
+            else
+            {
+                FoundFriends =  Friends.Where(f => f.FullName.Contains(SearchString)).ToList();
+            }
+        }
+
+        public string SearchString
+        {
+            get { return _searchString; }
+            set
+            {
+                _searchString = value;
+                SearchFriends();
+                OnPropertyChanged();
+            }
+        }
 
         public UploadFile FileToUpload
         {
@@ -93,7 +130,7 @@ namespace CryptIt.ViewModel
         private void ChangeUserOnlineStatus(int userId, bool online)
         {
             var friend = Friends.FirstOrDefault(f => f.Id == userId);
-            if (friend != null) friend.Status = online ? "Online" : "";
+            if (friend != null) friend.Online = online? 1 : 0;
         }
 
         private void ChangeMessagesStateToRead(int lastReadId, int peerId)
@@ -111,6 +148,22 @@ namespace CryptIt.ViewModel
 
         private async void AddMessages(Message message)
         {
+            if (message.UserId!= SelectedUser.Id && !message.Out)
+            {
+                var friend = FoundFriends.FirstOrDefault(f => f.Id == message.UserId);
+                if (friend!=null )
+                {
+                    if (friend.NumberOfNewMessages == null)
+                    {
+                        friend.NumberOfNewMessages = 1;
+                    }
+                    else
+                    {
+                        friend.NumberOfNewMessages++;
+                    }
+                }
+                OnPropertyChanged("FoundFriends");
+            }
             if (message.UserId == SelectedUser.Id)
             {
                 message.User = message.Out ? AuthorizeService.Instance.CurrentUser : SelectedUser;
@@ -132,6 +185,7 @@ namespace CryptIt.ViewModel
         private async void GetFriends()
         {
             Friends = (await _userService.GetFriends(AuthorizeService.Instance.CurrentUserId)).ToList();
+            FoundFriends = Friends;
         }
 
         private async void SendMessage()
@@ -143,12 +197,12 @@ namespace CryptIt.ViewModel
                 
             }
             //todo обработка потери соединения
-            if (string.IsNullOrEmpty(Message) && string.IsNullOrEmpty(FileToUpload.Url))
+            if (string.IsNullOrEmpty(Message) && FileToUpload==null)
                 return;
             await _messageService.SendMessage(SelectedUser.Id, Message);
             Message = String.Empty;
             
-            if (FileToUpload != null)
+            if (FileToUpload != null && !string.IsNullOrEmpty(FileToUpload.Url))
             {
                 await _messageService.SendMessage(SelectedUser.Id, HttpUtility.HtmlEncode(FileToUpload.Url));
                 FileToUpload = null;
@@ -202,6 +256,11 @@ namespace CryptIt.ViewModel
         private async void GetMessages()
         {
             Messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
+            SelectedUser.NumberOfNewMessages = null;
+            if (Messages.Count!=0 && !Messages[0].Out)
+            {
+               _messageService.MarkMessagesAsRead(new List<int> {Messages[0].Id}, SelectedUser.Id );
+            }
         }
 
     }
