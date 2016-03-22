@@ -49,7 +49,22 @@ namespace CryptIt.ViewModel
 
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
-            GetFriends();
+            GetStartInfo();
+        }
+        
+        private async void GetDialogsInfo()
+        {
+            var unreadDialogs = await _messageService.GetDialogs(true);
+            foreach (var dialog in unreadDialogs)
+            {
+                var friend = FoundFriends.FirstOrDefault(f => f.Id == dialog.Message.UserId);
+                if (friend!=null)
+                {
+                    friend.NumberOfNewMessages = dialog.UnreadMessagesAmount;
+                    OnPropertyChanged("FoundFriends");
+                }
+            }
+          
         }
 
         public bool IsFileUploading
@@ -182,10 +197,11 @@ namespace CryptIt.ViewModel
         }
 
         public DelegateCommand SendMessageCommand { get; set; }
-        private async void GetFriends()
+        private async void GetStartInfo()
         {
             Friends = (await _userService.GetFriends(AuthorizeService.Instance.CurrentUserId)).ToList();
             FoundFriends = Friends;
+            GetDialogsInfo();
         }
 
         private async void SendMessage()

@@ -19,18 +19,24 @@ namespace vkAPI
             _userService = new UserService();
         }
 
-        //public async Task<IEnumerable<Message>>GetDialogs(bool onlyUnread)
-        //{
-        //    var token = AuthorizeService.Instance.AccessToken;
-        //    var unread = onlyUnread ? 1 : 0;
-        //    var url = $"https://api.vk.com/method/messages.getDialogs?v=5.45&access_token={token}&unread={unread}";
-        //    var obj = JsonConvert.DeserializeObject((await GetUrl(url)).ToString()) as JObject;
-        //    var items = obj?["response"]?["items"].ToList();
-        //    if (items != null)
-        //    {
-                
-        //    }
-        //}
+        public async Task<IEnumerable<DialogInfo>> GetDialogs(bool onlyUnread)
+        {
+            var dialogsInfo = new List<DialogInfo>();
+            var token = AuthorizeService.Instance.AccessToken;
+            var unread = onlyUnread ? 1 : 0;
+            var url = $"https://api.vk.com/method/messages.getDialogs?v=5.45&access_token={token}&unread={unread}";
+            var obj = JsonConvert.DeserializeObject((await GetUrl(url)).ToString()) as JObject;
+            var items = obj?["response"]?["items"].ToList();
+
+            if (items == null ||items.Count == 0)
+                return dialogsInfo;  
+              
+            dialogsInfo.AddRange(
+                    items.Select(item => JsonConvert.DeserializeObject<DialogInfo>(item.ToString())));
+
+           
+            return dialogsInfo;
+        }
 
         public async Task<IEnumerable<Message>> GetDialog(int userId)
         {
