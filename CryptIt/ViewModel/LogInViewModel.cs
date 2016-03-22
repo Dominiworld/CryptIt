@@ -11,16 +11,19 @@ using System.Windows.Navigation;
 using CryptIt.Commands;
 using CryptIt.View;
 using vkAPI;
-
-
+using System.Runtime.InteropServices;
 
 namespace CryptIt.ViewModel
 {
     public class LogInViewModel:ViewModelBase
     {
+
+   
         private string _authorizeUrl;
         private MessageService _messageService;
         private UserService _userService;
+
+
 
         public LogInViewModel()
         {
@@ -34,11 +37,13 @@ namespace CryptIt.ViewModel
 
         private void Authorize()
         {
+
             var window = new BrowserView();
+            //ClearWebBrowser();
+           
             window.WebBrowser.Navigate(new Uri(AuthorizeUrl));
             window.Show();
             OnClosingRequest();
-
         }
 
         public DelegateCommand AuthorizeCommand { get; set; }
@@ -52,7 +57,24 @@ namespace CryptIt.ViewModel
                 OnPropertyChanged();
             }
         }
+        /// <summary>
+        ///clear webbrowser temp files to log out
+        /// </summary>
+        private void ClearWebBrowser()
+        {
+            string[] theCookies = System.IO.Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Cookies));
+            foreach (string currentFile in theCookies)
+            {
+                try
+                {
+                    System.IO.File.Delete(currentFile);
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+        }
 
-   
+
     }
 }
