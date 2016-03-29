@@ -98,7 +98,7 @@ namespace CryptIt.ViewModel
             }
             else
             {
-                FoundFriends =  Friends.Where(f => f.FullName.Contains(SearchString)).ToList();
+                FoundFriends =  Friends.Where(f => f.FullName.ToLower().Contains(SearchString.ToLower())).ToList();
             }
         }
 
@@ -150,6 +150,8 @@ namespace CryptIt.ViewModel
 
         private void ChangeMessagesStateToRead(int lastReadId, int peerId)
         {
+            if (SelectedUser == null)
+                return;
             if (SelectedUser.Id == peerId)
             {
                 var messages = Messages;
@@ -163,6 +165,8 @@ namespace CryptIt.ViewModel
 
         private async void AddMessages(Message message)
         {
+            if (SelectedUser == null)
+                return;
             if (message.UserId!= SelectedUser.Id && !message.Out)
             {
                 var friend = FoundFriends.FirstOrDefault(f => f.Id == message.UserId);
@@ -200,23 +204,28 @@ namespace CryptIt.ViewModel
         private async void GetStartInfo()
         {
             Friends = (await _userService.GetFriends(AuthorizeService.Instance.CurrentUserId)).ToList();
+            var usersFromDialogs = (await _userService.GetUsersFromDialogs());
+            Friends.AddRange(usersFromDialogs.Where(u=>!Friends.Select(f=>f.Id).Contains(u.Id)));
             FoundFriends = Friends;
             GetDialogsInfo();
         }
 
+
         private async void SendMessage()
         {
+            //todo обработка потери соединения
+
             if (IsFileUploading)
             {
                 MessageBoxResult errorDialog = MessageBox.Show("Подождите окончания загрузки");
                 return;
                 
             }
-            //todo обработка потери соединения
+            //todo шифровка Message
             if (string.IsNullOrEmpty(Message) && FileToUpload==null)
                 return;
             await _messageService.SendMessage(SelectedUser.Id, Message);
-            Message = String.Empty;
+            Message = string.Empty;
             
             if (FileToUpload != null && !string.IsNullOrEmpty(FileToUpload.Url))
             {
@@ -260,7 +269,8 @@ namespace CryptIt.ViewModel
 
         public User SelectedUser
         {
-            get { return _selectedUser; }
+            get {
+                return _selectedUser; }
             set
             {
                 _selectedUser = value;
@@ -271,7 +281,16 @@ namespace CryptIt.ViewModel
 
         private async void GetMessages()
         {
-            Messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
+            if (SelectedUser == null)
+                return;
+            try
+            {
+                Messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
+            }
+            catch(NullReferenceException ex)
+            {
+                return;
+            }
             SelectedUser.NumberOfNewMessages = null;
             if (Messages.Count!=0 && !Messages[0].Out)
             {
