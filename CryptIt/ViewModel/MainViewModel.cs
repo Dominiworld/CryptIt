@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Navigation;
@@ -49,6 +50,7 @@ namespace CryptIt.ViewModel
 
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
+            DownloadMessagesCommand = new DelegateCommand<ScrollChangedEventArgs>(DownloadMessages);
             GetStartInfo();
         }
         
@@ -65,6 +67,25 @@ namespace CryptIt.ViewModel
                 }
             }
           
+        }
+
+        public DelegateCommand<ScrollChangedEventArgs> DownloadMessagesCommand { get; set; }
+
+        private async void DownloadMessages(ScrollChangedEventArgs e)
+        {
+            if (Math.Abs(e.ExtentHeight - e.ViewportHeight - e.VerticalOffset) < 0.05)
+            {
+                if (SelectedUser != null)
+                {
+                    var nextMessages = (await _messageService.GetDialog(SelectedUser.Id, Messages.Count)).ToList();
+                   
+                    var messages = new List<Message>();
+                    messages.AddRange(Messages);
+                    messages.AddRange(nextMessages);
+                    Messages = messages;
+                }
+            }
+           
         }
 
         public bool IsFileUploading

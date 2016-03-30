@@ -3,6 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:CryptIt.Converters"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:local="clr-namespace:CryptIt"
+        xmlns:cmd ="http://www.galasoft.ch/mvvmlight"
         Title="MainView" Height="500" Width="700">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
@@ -22,7 +25,7 @@
                 <TextBox Text ="{Binding SearchString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Width="350" />
             </StackPanel>
-             <ListView Grid.Row="1" ItemsSource="{Binding FoundFriends}" SelectedItem="{Binding SelectedUser}">
+            <ListView  Grid.Row="1" ItemsSource="{Binding FoundFriends}" SelectedItem="{Binding SelectedUser}">
                 <ListView.View>
                     <GridView>
                         <GridView.Columns>
@@ -52,7 +55,9 @@
                 <RowDefinition Height="4*"></RowDefinition>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}"></TextBlock>
-            <ListView Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" >
+            <ListView 
+                Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" >
+                
                <ListView.Resources>
                     <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
                 </ListView.Resources>
@@ -71,8 +76,13 @@
                             <TextBlock Text="{Binding IsNotRead}"/>
                         </StackPanel>
                     </DataTemplate>
-                </ListView.ItemTemplate>   
-               
+                </ListView.ItemTemplate>
+                <i:Interaction.Triggers>
+                    <local:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
+                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True"/>
+                    </local:RoutedEventTrigger>
+                </i:Interaction.Triggers>
+
             </ListView>
             <TextBox Grid.Row="2" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
             <StackPanel Grid.Row="3">

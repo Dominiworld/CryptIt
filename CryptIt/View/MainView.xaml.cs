@@ -25,7 +25,5 @@ namespace CryptIt.View
             InitializeComponent();
             DataContext = new MainViewModel();
         }
-
-    
     }
 }
