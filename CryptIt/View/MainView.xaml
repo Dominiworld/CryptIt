@@ -73,7 +73,6 @@
                             <TextBlock Text="{Binding User.FullName}"/>
                             <TextBlock Text="{Binding Body}"/>
                             <TextBlock Text="{Binding Date}"/>
-                            <TextBlock Text="{Binding IsNotRead}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -87,7 +86,7 @@
             <TextBox Grid.Row="2" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
             <StackPanel Grid.Row="3">
                 <StackPanel.Resources>
-                    <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
+                    <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"/>
                 </StackPanel.Resources>
                 <Button  Content="Отправить" Command="{Binding SendMessageCommand}"/>
                 <StackPanel Orientation="Horizontal">

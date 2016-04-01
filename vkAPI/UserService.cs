@@ -33,7 +33,8 @@ namespace vkAPI
 
         public async Task<IEnumerable<User>> GetFriends(int userId)//only ids
         {
-            var url = $"https://api.vk.com/method/friends.get?user_id={userId}&fields=nickname,photo_50,online&v=5.45";
+            var token = AuthorizeService.Instance.AccessToken;
+            var url = $"https://api.vk.com/method/friends.get?user_id={userId}&fields=nickname,photo_50,online&v=5.45&access_token={token}";
             var obj = await GetUrl(url);
             return JsonConvert.DeserializeObject<IEnumerable<User>>(obj["response"]["items"].ToString());
         }
@@ -42,7 +43,7 @@ namespace vkAPI
         {
 
             var token = AuthorizeService.Instance.AccessToken;
-            var url = $"https://api.vk.com/method/messages.getDialogs?v=5.45&access_token={token}";
+            var url = $"https://api.vk.com/method/messages.getDialogs?v=5.45&access_token={token}&count=200";
             var obj = JsonConvert.DeserializeObject((await GetUrl(url)).ToString()) as JObject;
             if (obj == null && obj["response"] == null)
                 return new List<User>();

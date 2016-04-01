@@ -36,7 +36,7 @@ namespace Model
 
         public IEnumerable<User> Friends { get; set; }
 
-        public string FullName => FirstName + " " + LastName;
+        public string FullName => LastName + " " + FirstName;
 
         public int? NumberOfNewMessages
         {

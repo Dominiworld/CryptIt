@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -180,7 +181,9 @@ namespace CryptIt.ViewModel
                 {
                     message.IsNotRead = false;                   
                 }
-                Messages = messages;
+                Messages.Clear();
+                Messages = new List<Message>();
+                Messages.AddRange(messages);
             }
         }
 
@@ -225,8 +228,7 @@ namespace CryptIt.ViewModel
         private async void GetStartInfo()
         {
             Friends = (await _userService.GetFriends(AuthorizeService.Instance.CurrentUserId)).ToList();
-            var usersFromDialogs = (await _userService.GetUsersFromDialogs());
-            Friends.AddRange(usersFromDialogs.Where(u=>!Friends.Select(f=>f.Id).Contains(u.Id)));
+            Friends = Friends.OrderBy(f => f.LastName).ToList();
             FoundFriends = Friends;
             GetDialogsInfo();
         }
@@ -308,9 +310,13 @@ namespace CryptIt.ViewModel
             {
                 Messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
             }
-            catch(NullReferenceException ex)
+            catch (NullReferenceException ex)
             {
                 return;
+            }
+            catch (WebException ex)
+            {
+                MessageBox.Show("Потеряно соединение с сервером", "Ошибка");
             }
             SelectedUser.NumberOfNewMessages = null;
             if (Messages.Count!=0 && !Messages[0].Out)
