@@ -51,11 +51,12 @@
            <Grid.RowDefinitions>
                <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="15*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}"></TextBlock>
-            <ListView 
+            <ListView Height="Auto"
                 Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" >
                 
                <ListView.Resources>
@@ -83,8 +84,10 @@
                 </i:Interaction.Triggers>
 
             </ListView>
-            <TextBox Grid.Row="2" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
-            <StackPanel Grid.Row="3">
+            <TextBlock Grid.Row="2" Height="Auto" Text="{Binding ErrorMessage, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBox Grid.Row="3" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
+            <StackPanel Grid.Row="4">
                 <StackPanel.Resources>
                     <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"/>
                 </StackPanel.Resources>

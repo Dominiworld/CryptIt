@@ -148,6 +148,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CryptingTool\CryptingTool.csproj">
+      <Project>{95FC244E-4BF3-4C84-84FE-6CF793EFFD57}</Project>
+      <Name>CryptingTool</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Model\Model.csproj">
       <Project>{70b36cdb-212c-45dc-ae7d-15a306489fc0}</Project>
       <Name>Model</Name>
