@@ -1,11 +1,16 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using Model.Annotations;
 using Newtonsoft.Json;
 
 namespace Model
 {
-    public class Message
+    public class Message:INotifyPropertyChanged
     {
+        private bool _isNotRead;
+
         [JsonProperty("id")]
         public int Id { get; set; }
         [JsonProperty("user_id")]
@@ -26,8 +31,24 @@ namespace Model
         public bool Out { get; set;  } //0-полученное, 1-отправленное
         [JsonProperty("body")]
         public string Body { get; set; } //принятое сообщение
-        public bool IsNotRead { get; set; }
-        
 
+        public bool IsNotRead
+        {
+            get { return _isNotRead; }
+            set
+            {
+                _isNotRead = value; 
+                OnPropertyChanged();
+            }
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
