@@ -10,6 +10,8 @@ namespace CryptingTool
     public class SignAndData
     {
 
+        private static string _isCryptedFlag = "ъйьz";
+
         public static CngKey senderKeySignature;
         public static byte[] senderPubKeyBlob;
 
@@ -67,7 +69,7 @@ namespace CryptingTool
 
         #region Шифруем данные(Алгоритм AES)
 
-       public static string Encrypt(string str, string keyCrypt)
+        public static string Encrypt(string str, string keyCrypt)
        {
            return Convert.ToBase64String(Encrypt(Encoding.UTF8.GetBytes(str), keyCrypt));
        }
@@ -143,35 +145,51 @@ namespace CryptingTool
             return new CryptoStream(ms, ct, CryptoStreamMode.Read);
         }
 
-
-
         #endregion
 
         #region Вспомогательные функции распаковки и упаковки сообщений
+        /// <summary>
+        /// Расшифровка сообщения
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static string SplitAndUnpackReceivedMessage(string message)
         {
+            string des = message.Substring(0, _isCryptedFlag.Length);
+
+            if (des!=_isCryptedFlag)
+                return message;
+
+            message = message.Substring(_isCryptedFlag.Length);
+            message = message.FromBase64();
+
             byte[] receivedSignature = Encoding.Default.GetBytes(message.Substring(0, 64));
             byte[] receivedPubKey = Encoding.Default.GetBytes(message.Substring(64, 72));
             byte[] receivedData = Encoding.Default.GetBytes(message.Substring(136));
 
             if (VerifySignature(receivedData, receivedSignature, receivedPubKey))
             {
-                //Console.WriteLine("Подпись отправителя была успешно проверена");
                 return Decrypt(receivedData, "baba");               
-                //Console.WriteLine("Данные получены. Содержимое: " + Decrypt(receivedData, "baba"));
             }
             return message;
         }
+
+        /// <summary>
+        /// Шифровка сообщения
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static string MakingEnvelope(string message)         //TODO Добавить в функцию строковую переменную ключа для шифрования данных
         {
             CreateKeys();
             byte[] senderData = Encrypt(Encoding.UTF8.GetBytes(message), "baba");
 
-            byte[] senderSignature = CreateSignature(senderData, SignAndData.senderKeySignature);
+            byte[] senderSignature = CreateSignature(senderData, senderKeySignature);
+            var data = Encoding.Default.GetString(senderSignature) +
+                        Encoding.Default.GetString(senderPubKeyBlob) +
+                        Encoding.Default.GetString(senderData);
 
-            string envelope = Encoding.Default.GetString(senderSignature) +
-                             Encoding.Default.GetString(SignAndData.senderPubKeyBlob) + Encoding.Default.GetString(senderData);
-            return envelope;
+            return _isCryptedFlag + data.ToBase64();
         }
         public static void ChangingFile(string path)         //TODO Добавить в функцию строковую переменную ключа для шифрования данных
         {

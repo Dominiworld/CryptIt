@@ -199,11 +199,10 @@ namespace CryptIt.ViewModel
 
         private async void AddMessages(Message message)
         {
-
             if (SelectedUser == null)
                 return;
 
-            var decryptedMessage = SignAndData.SplitAndUnpackReceivedMessage(message.Body.FromBase64());
+            var decryptedMessage = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
             message.Body = decryptedMessage;
             if (message.UserId!= SelectedUser.Id && !message.Out)
             {
@@ -280,7 +279,7 @@ namespace CryptIt.ViewModel
                 if (string.IsNullOrEmpty(Message) && FileToUpload == null)
                 return;
 
-                var cryptedMessage = SignAndData.MakingEnvelope(Message).ToBase64();
+                var cryptedMessage = SignAndData.MakingEnvelope(Message);
 
                 await _messageService.SendMessage(SelectedUser.Id, cryptedMessage);
                 Message = string.Empty;
