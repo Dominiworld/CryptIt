@@ -13,13 +13,7 @@ namespace vkAPI
 
     public class AuthorizeService:BaseService
     {
-
-        private static readonly AuthorizeService instance = new AuthorizeService();
-
-        public static AuthorizeService Instance
-        {
-            get { return instance; }
-        }
+        public static AuthorizeService Instance { get; } = new AuthorizeService();
 
         protected AuthorizeService() { }
 

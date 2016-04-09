@@ -19,7 +19,7 @@ namespace vkAPI
             _userService = new UserService();
         }
 
-        public async Task<IEnumerable<DialogInfo>> GetDialogs(bool onlyUnread = false)
+        public async Task<IEnumerable<DialogInfo>> GetDialogs(bool onlyUnread)
         {
             var dialogsInfo = new List<DialogInfo>();
             var token = AuthorizeService.Instance.AccessToken;
@@ -38,11 +38,10 @@ namespace vkAPI
             return dialogsInfo;
         }
 
-        public async Task<IEnumerable<Message>> GetDialog(int userId)
+        public async Task<IEnumerable<Message>> GetDialog(int userId,int offset = 0)
         {
             var token = AuthorizeService.Instance.AccessToken;
-            var url = string.Format("https://api.vk.com/method/messages.getHistory?user_id={0}&v=5.45&access_token={1}",
-               userId, token);
+            var url = $"https://api.vk.com/method/messages.getHistory?user_id={userId}&v=5.45&access_token={token}&offset={offset}";
             var obj = await GetUrl(url);
             var messages = JsonConvert.DeserializeObject<List<Message>>(obj["response"]["items"].ToString());
             var lastPeerReadId = JsonConvert.DeserializeObject<int>(obj["response"]["out_read"].ToString());
@@ -65,8 +64,9 @@ namespace vkAPI
         public async Task<int> SendMessage(int userId, string message)
         {
             if (message == null)
-                 return 0;
-            
+            {
+                return 0;
+            }
             var token = AuthorizeService.Instance.AccessToken;
 
             var url =
@@ -77,9 +77,6 @@ namespace vkAPI
 
         public async void MarkMessagesAsRead(List<int> messageIds, int peerId)
         {
-            if (!messageIds.Any())
-                return;
-
             string messageIdsString = string.Join(",", messageIds);
             var token = AuthorizeService.Instance.AccessToken;
             var url =

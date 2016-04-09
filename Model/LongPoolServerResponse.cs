@@ -14,5 +14,7 @@ namespace Model
        public int Ts { get; set; }
        [JsonProperty("updates")]
        public List<List<object>> Updates { get; set; }
+        [JsonProperty("failed")]
+        public int ErrorCode { get; set; }
     }
 }

@@ -32,11 +32,17 @@ namespace vkAPI
 
             while (connectionSettings.TS != 0)
             {
-                url =
-                    $"http://{connectionSettings.Adress}?act=a_check&key={connectionSettings.Key}&ts={connectionSettings.TS}&wait=25&mode=2";
-                obj = await GetUrl(url);
+                LongPoolServerResponse updates;
+                do
+                {
+                    url = $"http://{connectionSettings.Adress}?" +
+                        $"act=a_check&key={connectionSettings.Key}" +
+                        $"&ts={connectionSettings.TS}&wait=25&mode=2";
 
-                var updates = JsonConvert.DeserializeObject<LongPoolServerResponse>(obj.ToString());
+                    obj = await GetUrl(url);
+                    updates = JsonConvert.DeserializeObject<LongPoolServerResponse>(obj.ToString());
+                } while (updates.ErrorCode != 0);
+
                 connectionSettings.TS = updates.Ts;
 
                 foreach (var update in updates.Updates)

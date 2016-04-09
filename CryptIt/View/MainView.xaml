@@ -3,6 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:CryptIt.Converters"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:local="clr-namespace:CryptIt"
+        xmlns:vm="clr-namespace:CryptIt.ViewModel"
+        xmlns:cmd ="http://www.galasoft.ch/mvvmlight" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance vm:MainViewModel}"
         Title="MainView" Height="500" Width="700">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
@@ -22,7 +28,7 @@
                 <TextBox Text ="{Binding SearchString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Width="350" />
             </StackPanel>
-             <ListView Grid.Row="1" ItemsSource="{Binding FoundFriends}" SelectedItem="{Binding SelectedUser}">
+            <ListView  Grid.Row="1" ItemsSource="{Binding FoundFriends}" SelectedItem="{Binding SelectedUser}">
                 <ListView.View>
                     <GridView>
                         <GridView.Columns>
@@ -48,13 +54,17 @@
            <Grid.RowDefinitions>
                <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="15*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
                 <RowDefinition Height="4*"></RowDefinition>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}"></TextBlock>
-            <ListView Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" >
+            <ListView Height="Auto"
+                Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" >
+                
                <ListView.Resources>
                     <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
+                    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
                 </ListView.Resources>
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -67,17 +77,27 @@
                             <Image Source="{Binding User.PhotoUrl}" />
                             <TextBlock Text="{Binding User.FullName}"/>
                             <TextBlock Text="{Binding Body}"/>
-                            <TextBlock Text="{Binding Date}"/>
-                            <TextBlock Text="{Binding IsNotRead}"/>
+                            <TextBlock Text="{Binding Date}" />
+                            <Button Content="Загрузить"  CommandParameter="{Binding Body}"
+                                    Command="{Binding DataContext.DownloadFileCommand,
+                                RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Window} }}"
+                                    Visibility="{Binding IsLinkToFile, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
                     </DataTemplate>
-                </ListView.ItemTemplate>   
-               
+                </ListView.ItemTemplate>
+                <i:Interaction.Triggers>
+                    <local:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
+                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True"/>
+                    </local:RoutedEventTrigger>
+                </i:Interaction.Triggers>
+
             </ListView>
-            <TextBox Grid.Row="2" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
-            <StackPanel Grid.Row="3">
+            <TextBlock Grid.Row="2" Height="Auto" Text="{Binding ErrorMessage, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBox Grid.Row="3" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
+            <StackPanel Grid.Row="4">
                 <StackPanel.Resources>
-                    <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
+                    <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"/>
                 </StackPanel.Resources>
                 <Button  Content="Отправить" Command="{Binding SendMessageCommand}"/>
                 <StackPanel Orientation="Horizontal">

@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Navigation;
+using CryptingTool;
 using CryptIt.Commands;
 using CryptIt.View;
 using Model;
@@ -34,7 +37,7 @@ namespace CryptIt.ViewModel
         private bool _isFileUploading;
         private List<User> _foundFriends;
         private string _searchString;
-
+        private string _errorMessage;
 
         public MainViewModel()
         {
@@ -49,22 +52,62 @@ namespace CryptIt.ViewModel
 
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
+            DownloadMessagesCommand = new DelegateCommand<ScrollChangedEventArgs>(DownloadMessages);
+            DownloadFileCommand = new DelegateCommand<string>(DownloadFile);
             GetStartInfo();
         }
-        
+
+        public string ErrorMessage
+        {
+            get { return _errorMessage; }
+            set
+            {
+                _errorMessage = value;
+                OnPropertyChanged();
+            }
+        }
+
         private async void GetDialogsInfo()
         {
-            var unreadDialogs = await _messageService.GetDialogs(true);
-            foreach (var dialog in unreadDialogs)
+            try
             {
-                var friend = FoundFriends.FirstOrDefault(f => f.Id == dialog.Message.UserId);
-                if (friend!=null)
+                var unreadDialogs = await _messageService.GetDialogs(true);
+                foreach (var dialog in unreadDialogs)
                 {
-                    friend.NumberOfNewMessages = dialog.UnreadMessagesAmount;
-                    OnPropertyChanged("FoundFriends");
+                    var friend = FoundFriends.FirstOrDefault(f => f.Id == dialog.Message.UserId);
+                    if (friend != null)
+                    {
+                        friend.NumberOfNewMessages = dialog.UnreadMessagesAmount;
+                        OnPropertyChanged("FoundFriends");
+                    }
                 }
             }
-          
+            catch (WebException)
+            {
+                
+            }
+
+        }
+
+        public DelegateCommand<ScrollChangedEventArgs> DownloadMessagesCommand { get; set; }
+
+        private async void DownloadMessages(ScrollChangedEventArgs e)
+        {
+            if (Math.Abs(e.ExtentHeight - e.ViewportHeight - e.VerticalOffset) > 0.05) return;
+            if (SelectedUser == null) return;
+            try
+            {
+                var nextMessages = (await _messageService.GetDialog(SelectedUser.Id, Messages.Count)).ToList();
+                //todo сделать лучше биндинг
+                var messages = new List<Message>();
+                messages.AddRange(Messages);
+                messages.AddRange(nextMessages);
+                Messages = messages;
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         public bool IsFileUploading
@@ -92,14 +135,9 @@ namespace CryptIt.ViewModel
 
         private void SearchFriends()
         {
-            if (string.IsNullOrEmpty(SearchString))
-            {
-                FoundFriends = Friends;
-            }
-            else
-            {
-                FoundFriends =  Friends.Where(f => f.FullName.ToLower().Contains(SearchString.ToLower())).ToList();
-            }
+            FoundFriends = string.IsNullOrEmpty(SearchString) ? 
+                Friends :
+                Friends.Where(f => f.FullName.ToLower().Contains(SearchString.ToLower())).ToList();
         }
 
         public string SearchString
@@ -125,6 +163,8 @@ namespace CryptIt.ViewModel
 
         public DelegateCommand UploadFileCommand { get; set; }
 
+        
+
         private async void OpenFileDialog()
         {
             if (SelectedUser==null)
@@ -136,9 +176,10 @@ namespace CryptIt.ViewModel
             {
                 FileToUpload = new UploadFile {FileName = dialog.FileName};
                 IsFileUploading = true;
-                FileToUpload.Url = await _fileService.UploadFile(dialog.FileName, SelectedUser.Id);
+                SignAndData.EncryptFile(dialog.FileName, "crypt.crypt", "babasahs"); //todo change key
+                FileToUpload = await _fileService.UploadFile("crypt.crypt", SelectedUser.Id);
                 IsFileUploading = false;
-                FileToUpload.FileName = dialog.FileName;
+                //FileToUpload.FileName = dialog.FileName;
             }
         }
 
@@ -150,16 +191,13 @@ namespace CryptIt.ViewModel
 
         private void ChangeMessagesStateToRead(int lastReadId, int peerId)
         {
-            if (SelectedUser == null)
-                return;
-            if (SelectedUser.Id == peerId)
+            if (SelectedUser?.Id == peerId)
             {
-                var messages = Messages;
-                foreach (var message in messages.ToArray().Where(m=>m.Id <= lastReadId))
+                foreach (var message in Messages.ToArray().Where(m=>m.Id <= lastReadId))
                 {
                     message.IsNotRead = false;                   
                 }
-                Messages = messages;
+                OnPropertyChanged("Messages");
             }
         }
 
@@ -167,8 +205,16 @@ namespace CryptIt.ViewModel
         {
             if (SelectedUser == null)
                 return;
+
+            var decryptedMessage = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
+            message.Body = decryptedMessage;
+            if (CheckForFileLink(message.Body))
+            {
+                message.IsLinkToFile = true;
+            }
             if (message.UserId!= SelectedUser.Id && !message.Out)
             {
+               
                 var friend = FoundFriends.FirstOrDefault(f => f.Id == message.UserId);
                 if (friend!=null )
                 {
@@ -183,29 +229,45 @@ namespace CryptIt.ViewModel
                 }
                 OnPropertyChanged("FoundFriends");
             }
-            if (message.UserId == SelectedUser.Id)
+            if (message.UserId != SelectedUser.Id) return;
+            message.User = message.Out ? AuthorizeService.Instance.CurrentUser : SelectedUser;
+          
+            if (!message.Out)
             {
-                message.User = message.Out ? AuthorizeService.Instance.CurrentUser : SelectedUser;
-                if (!message.Out)
+                try
                 {
                     message.IsNotRead = false;
                     _messageService.MarkMessagesAsRead(new List<int> { message.Id }, SelectedUser.Id);
                 }
-                var messages = new List<Message>
+                catch (Exception)
                 {
-                    message
-                };
-                messages.AddRange(Messages);
-                Messages = messages;
+                    // ignored
+                }
             }
+            //todo переделать биндинг
+            var messages = new List<Message>
+            {
+                message
+            };
+            messages.AddRange(Messages);
+            Messages = messages;
+
         }
 
         public DelegateCommand SendMessageCommand { get; set; }
         private async void GetStartInfo()
         {
-            Friends = (await _userService.GetFriends(AuthorizeService.Instance.CurrentUserId)).ToList();
-            var usersFromDialogs = (await _userService.GetUsersFromDialogs());
-            Friends.AddRange(usersFromDialogs.Where(u=>!Friends.Select(f=>f.Id).Contains(u.Id)));
+            try
+            {
+                Friends = (await _userService.GetFriends(AuthorizeService.Instance.CurrentUserId)).ToList();
+            }
+            catch (WebException)
+            {
+                //todo вывод ошибки
+                return;
+            }
+            Friends = Friends.OrderBy(f => f.LastName).ToList();
+            Friends.Add(new User {Id = AuthorizeService.Instance.CurrentUserId, FirstName = "z", LastName = "z"});
             FoundFriends = Friends;
             GetDialogsInfo();
         }
@@ -213,25 +275,37 @@ namespace CryptIt.ViewModel
 
         private async void SendMessage()
         {
-            //todo обработка потери соединения
 
             if (IsFileUploading)
             {
-                MessageBoxResult errorDialog = MessageBox.Show("Подождите окончания загрузки");
-                return;
-                
+                var errorDialog = MessageBox.Show("Подождите окончания загрузки");               
+                return;               
             }
-            //todo шифровка Message
-            if (string.IsNullOrEmpty(Message) && FileToUpload==null)
-                return;
-            await _messageService.SendMessage(SelectedUser.Id, Message);
-            Message = string.Empty;
-            
-            if (FileToUpload != null && !string.IsNullOrEmpty(FileToUpload.Url))
+            try
             {
-                await _messageService.SendMessage(SelectedUser.Id, HttpUtility.HtmlEncode(FileToUpload.Url));
-                FileToUpload = null;
+
+                              
+                if (string.IsNullOrEmpty(Message) && FileToUpload == null)
+                return;
+                if (!string.IsNullOrEmpty(Message))
+                {
+                     var cryptedMessage = SignAndData.MakingEnvelope(Message);
+                     await _messageService.SendMessage(SelectedUser.Id, cryptedMessage);
+                     Message = string.Empty;
+                }
+
+
+                if (FileToUpload != null && !string.IsNullOrEmpty(FileToUpload.Url))
+                {
+                    await _messageService.SendMessage(SelectedUser.Id, FileToUpload.Url);
+                    FileToUpload = null;
+                }
             }
+            catch (WebException)
+            {
+                ShowWebErrorMessage();
+            }
+            
         }
 
         public string Message
@@ -263,7 +337,6 @@ namespace CryptIt.ViewModel
             {
                 _messages = value;
                 OnPropertyChanged();
-                OnPropertyChanged();
             }
         }
 
@@ -279,16 +352,41 @@ namespace CryptIt.ViewModel
             }
         }
 
+        private bool CheckForFileLink(string message)
+        {
+            var pattern = "http://vk.com/doc";
+            if (message.Length < pattern.Length)
+            {
+                return false;
+            }
+            return message.Substring(0, pattern.Length) == pattern;
+        }
+
         private async void GetMessages()
         {
             if (SelectedUser == null)
                 return;
             try
             {
-                Messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
+                var messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
+                foreach (var message in messages.ToArray())
+                {
+                    message.Body = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
+                    if (CheckForFileLink(message.Body))
+                    {
+                        message.IsLinkToFile = true;                       
+                    }
+                }
+                Messages = messages;
             }
-            catch(NullReferenceException ex)
+            catch (NullReferenceException ex)
             {
+                return;
+            }
+            catch (WebException ex)
+            {
+                Messages = null;
+                ShowWebErrorMessage();
                 return;
             }
             SelectedUser.NumberOfNewMessages = null;
@@ -297,6 +395,23 @@ namespace CryptIt.ViewModel
                _messageService.MarkMessagesAsRead(new List<int> {Messages[0].Id}, SelectedUser.Id );
             }
         }
+
+        private void ShowWebErrorMessage()
+        {
+           // MessageBox.Show("Потеряно соединение с сервером", "Ошибка");
+            ErrorMessage = "Потеряно соединение с сервером";
+        }
+
+        private void DownloadFile(string url)
+        {
+            _fileService.DownloadFile(url);
+            SignAndData.DecryptFile("crypt.crypt","file.jpg", "babasahs");
+            
+
+        }
+        public DelegateCommand<string> DownloadFileCommand { get; set; }
+
+
 
     }
 }
