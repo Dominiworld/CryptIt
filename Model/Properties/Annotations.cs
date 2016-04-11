@@ -905,14 +905,14 @@ namespace Model.Annotations
   [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
   public sealed class AspChildControlTypeAttribute : Attribute
   {
-    public AspChildControlTypeAttribute(string tagName, Type controlType)
+    public AspChildControlTypeAttribute(string tagName, string controlType)
     {
       TagName = tagName;
       ControlType = controlType;
     }
 
     public string TagName { get; private set; }
-    public Type ControlType { get; private set; }
+    public string ControlType { get; private set; }
   }
 
   [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]

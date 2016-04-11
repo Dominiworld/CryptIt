@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Model.Annotations;
 using Newtonsoft.Json;
@@ -9,6 +12,7 @@ namespace Model
 {
     public class Message:INotifyPropertyChanged
     {
+
         private bool _isNotRead;
 
         [JsonProperty("id")]
@@ -42,8 +46,10 @@ namespace Model
             }
         }
 
-        public bool IsLinkToFile { get; set; }
 
+
+        [JsonProperty("attachments")]
+        public ObservableCollection<Attachment> Attachments { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

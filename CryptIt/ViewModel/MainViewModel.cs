@@ -33,7 +33,7 @@ namespace CryptIt.ViewModel
         private List<Message> _messages;
         private List<User> _friends;
         private string _message;
-        private UploadFile _fileToUpload;
+        private Document _fileToUpload;
         private bool _isFileUploading;
         private List<User> _foundFriends;
         private string _searchString;
@@ -50,10 +50,12 @@ namespace CryptIt.ViewModel
             _longPollServer.UserBecameOnlineOrOfflineEvent += ChangeUserOnlineStatus;
             _longPollServer.ConnectToLongPollServer();
 
+            Message  = new Message();
+
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
             DownloadMessagesCommand = new DelegateCommand<ScrollChangedEventArgs>(DownloadMessages);
-            DownloadFileCommand = new DelegateCommand<string>(DownloadFile);
+            DownloadFileCommand = new DelegateCommand<Document>(DownloadFile);
             GetStartInfo();
         }
 
@@ -151,19 +153,7 @@ namespace CryptIt.ViewModel
             }
         }
 
-        public UploadFile FileToUpload
-        {
-            get { return _fileToUpload; }
-            set
-            {
-                _fileToUpload = value;
-                OnPropertyChanged();
-            }
-        }
-
         public DelegateCommand UploadFileCommand { get; set; }
-
-        
 
         private async void OpenFileDialog()
         {
@@ -174,12 +164,24 @@ namespace CryptIt.ViewModel
             var dialog = new OpenFileDialog {Multiselect = true};
             if (dialog.ShowDialog()==true)
             {
-                FileToUpload = new UploadFile {FileName = dialog.FileName};
+                if (Message.Attachments == null)
+                {
+                    Message.Attachments = new ObservableCollection<Attachment>();
+                }
+                var pathItems = dialog.FileName.Split('\\');
+                var attachment = new Attachment
+                {
+                    Document = new Document {FullName = pathItems[pathItems.Length-1]},
+                    Type = "doc"
+                };
+                Message.Attachments.Add(attachment);
+                OnPropertyChanged("Message");
                 IsFileUploading = true;
                 SignAndData.EncryptFile(dialog.FileName, "crypt.crypt", "babasahs"); //todo change key
-                FileToUpload = await _fileService.UploadFile("crypt.crypt", SelectedUser.Id);
-                IsFileUploading = false;
-                //FileToUpload.FileName = dialog.FileName;
+                var uploadedFile = await _fileService.UploadFile("crypt.crypt", SelectedUser.Id);
+                attachment.Document.Id = uploadedFile.Id;
+                attachment.Document.OwnerId = uploadedFile.OwnerId;
+                IsFileUploading = false;                
             }
         }
 
@@ -208,10 +210,8 @@ namespace CryptIt.ViewModel
 
             var decryptedMessage = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
             message.Body = decryptedMessage;
-            if (CheckForFileLink(message.Body))
-            {
-                message.IsLinkToFile = true;
-            }
+            TakeFileNamesFromBody(message);
+
             if (message.UserId!= SelectedUser.Id && !message.Out)
             {
                
@@ -275,30 +275,29 @@ namespace CryptIt.ViewModel
 
         private async void SendMessage()
         {
-
             if (IsFileUploading)
             {
                 var errorDialog = MessageBox.Show("Подождите окончания загрузки");               
                 return;               
             }
-            try
+            //добавляем полные имена файлов для расшифровки (# - для отделения имен от body)
+            if (Message.Attachments!=null)
             {
+                Message.Body += '#' + string.Join(",", Message.Attachments.Select(a => a.Document.FullName).ToList());
+            }
 
-                              
-                if (string.IsNullOrEmpty(Message) && FileToUpload == null)
+            try
+            {           
+                if (string.IsNullOrEmpty(Message.Body) && (Message.Attachments == null || !Message.Attachments.Any()))
                 return;
-                if (!string.IsNullOrEmpty(Message))
+                if (!string.IsNullOrEmpty(Message.Body))
                 {
-                     var cryptedMessage = SignAndData.MakingEnvelope(Message);
-                     await _messageService.SendMessage(SelectedUser.Id, cryptedMessage);
-                     Message = string.Empty;
-                }
+                     var cryptedMessage = SignAndData.MakingEnvelope(Message.Body);
+                     Message.Body = cryptedMessage;
+                     await _messageService.SendMessage(SelectedUser.Id, Message);
+                    Message.Attachments?.Clear();
+                    Message = new Message();
 
-
-                if (FileToUpload != null && !string.IsNullOrEmpty(FileToUpload.Url))
-                {
-                    await _messageService.SendMessage(SelectedUser.Id, FileToUpload.Url);
-                    FileToUpload = null;
                 }
             }
             catch (WebException)
@@ -308,17 +307,7 @@ namespace CryptIt.ViewModel
             
         }
 
-        public string Message
-        {
-            get { return _message; }
-            set
-            {
-                _message = value; 
-                OnPropertyChanged();
-
-
-            }
-        }
+        public Message Message { get; set; }
 
         public List<User> Friends
         {
@@ -352,15 +341,6 @@ namespace CryptIt.ViewModel
             }
         }
 
-        private bool CheckForFileLink(string message)
-        {
-            var pattern = "http://vk.com/doc";
-            if (message.Length < pattern.Length)
-            {
-                return false;
-            }
-            return message.Substring(0, pattern.Length) == pattern;
-        }
 
         private async void GetMessages()
         {
@@ -372,10 +352,7 @@ namespace CryptIt.ViewModel
                 foreach (var message in messages.ToArray())
                 {
                     message.Body = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
-                    if (CheckForFileLink(message.Body))
-                    {
-                        message.IsLinkToFile = true;                       
-                    }
+                    TakeFileNamesFromBody(message);
                 }
                 Messages = messages;
             }
@@ -402,16 +379,32 @@ namespace CryptIt.ViewModel
             ErrorMessage = "Потеряно соединение с сервером";
         }
 
-        private void DownloadFile(string url)
+        private void DownloadFile(Document doc)
         {
-            _fileService.DownloadFile(url);
-            SignAndData.DecryptFile("crypt.crypt","file.jpg", "babasahs");
-            
-
+            _fileService.DownloadFile(doc.Url);
+            SignAndData.DecryptFile("crypt.crypt",doc.FileName, "babasahs");
         }
-        public DelegateCommand<string> DownloadFileCommand { get; set; }
+        public DelegateCommand<Document> DownloadFileCommand { get; set; }
 
+        private void TakeFileNamesFromBody(Message message)
+        {
+            if (message.Attachments != null && message.Attachments.Any())
+            {
 
-
+                //парсим имена файлов (текст#имя_файла1,имя_файла2)
+                var probablyFiles = message.Body.Split('#').Last();
+                var cryptedfileNames = probablyFiles.Split(',').ToList();
+                //todo условие может поломаться!!!
+                if (!message.Body.Contains('#') || cryptedfileNames.Count != message.Attachments.Count ||
+                    (string.IsNullOrEmpty(cryptedfileNames[0]) && cryptedfileNames.Count == 1))
+                    //сообщение не шифрованное или ошибка
+                    return;
+                message.Body = message.Body.Substring(0, message.Body.Length - probablyFiles.Length - 1);
+                foreach (var attachment in message.Attachments) //восстанавливаем имена зашифрованных из message.body
+                {
+                    attachment.Document.FileName = cryptedfileNames[message.Attachments.IndexOf(attachment)];
+                }
+            }
+        }
     }
 }

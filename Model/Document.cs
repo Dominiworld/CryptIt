@@ -2,7 +2,7 @@
 
 namespace Model
 {
-    public class UploadFile
+    public class Document
     {
         [JsonProperty("did")]
         public int Id { get; set; }
@@ -14,5 +14,12 @@ namespace Model
         public string Url { get; set; }
         [JsonProperty("ext")]
         public string Extension { get; set; }
+        [JsonProperty("owner_id")]
+        public int OwnerId { get; set; }
+        /// <summary>
+        /// имя файла до шифровки
+        /// </summary>
+        public string FullName { get; set; }
+
     }
 }

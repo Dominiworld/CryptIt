@@ -61,16 +61,23 @@ namespace vkAPI
             return messages;
         }
 
-        public async Task<int> SendMessage(int userId, string message)
+        public async Task<int> SendMessage(int userId, Message message)
         {
             if (message == null)
             {
                 return 0;
             }
             var token = AuthorizeService.Instance.AccessToken;
-
             var url =
-                $"https://api.vk.com/method/messages.send?v=5.45&user_id={userId}&message={message}&access_token={token}";
+                $"https://api.vk.com/method/messages.send?v=5.45&user_id={userId}&message={message.Body}&access_token={token}";
+            if (message.Attachments!=null)
+            {
+                var attachments = message.Attachments.Select(a => a.Type + a.Document.OwnerId + "_" + a.Document.Id);
+                var attachmentString = string.Join(",", attachments);
+                url+= $"&attachment={attachmentString}"; 
+            }
+           
+
             var id =  await GetUrl(url);
             return JsonConvert.DeserializeObject<int>(id["response"].ToString());
         }
