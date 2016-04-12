@@ -82,8 +82,8 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Document.FileName}"/>
-                                            <Button Content="Загрузить"  CommandParameter="{Binding Document}"
+                                            <TextBlock Text="{Binding File.FileName, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <Button Content="Загрузить"  CommandParameter="{Binding}"
                                             Command="{Binding DataContext.DownloadFileCommand,
                                             RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Window} }}"/>
                                         </StackPanel>
@@ -96,7 +96,7 @@
                 </ListView.ItemTemplate>
                 <i:Interaction.Triggers>
                     <local:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
-                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True"/>
+                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
                     </local:RoutedEventTrigger>
                 </i:Interaction.Triggers>
 

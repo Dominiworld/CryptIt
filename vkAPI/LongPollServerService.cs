@@ -76,7 +76,7 @@ namespace vkAPI
                                 .Select(e => e.Split(':').Last()).ToList();
                              var types = attachString
                                 .Where(s => s.Contains("type")).ToList()
-                                .Select(e => e.Split(':').Last()).ToList();
+                                .Select(e => e.Split(':').Last().Trim(' ')).ToList();
 
                             //todo нужно передавать в GetDocuments typе (photo, doc, video,...)
                             //пока работает только для doc

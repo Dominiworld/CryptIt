@@ -38,7 +38,7 @@ namespace vkAPI
                     return null;
                 }
                 //
-                var u3 = "https://api.vk.com/method/docs.save?access_token=" + token
+                var u3 = "https://api.vk.com/method/docs.save?v=5.45&access_token=" + token
                          + "&file=" + j2["file"];
                 var docObj = await GetUrl(u3);
             
@@ -47,11 +47,12 @@ namespace vkAPI
             }
         }
 
-        public void DownloadFile(string url, string path)
+        public async Task DownloadFile(string url, string path, string fileName)
         {           
             using (var client = new WebClient())
             {
-               client.DownloadFile(url, path);
+                client.DownloadFile(url, path + "\\"+fileName);     
+                //await client.DownloadFileTaskAsync(url , path + "\\"+fileName);
             }
 
         }

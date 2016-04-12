@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attachment.cs" />
+    <Compile Include="IBaseFile.cs" />
+    <Compile Include="Photo.cs" />
     <Compile Include="DialogInfo.cs" />
     <Compile Include="LongPollConnectionSettings.cs" />
     <Compile Include="LongPoolServerResponse.cs" />

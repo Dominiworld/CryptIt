@@ -55,7 +55,7 @@ namespace CryptIt.ViewModel
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
             DownloadMessagesCommand = new DelegateCommand<ScrollChangedEventArgs>(DownloadMessages);
-            DownloadFileCommand = new DelegateCommand<Document>(DownloadFile);
+            DownloadFileCommand = new DelegateCommand<Attachment>(DownloadFile);
             GetStartInfo();
         }
 
@@ -95,6 +95,7 @@ namespace CryptIt.ViewModel
 
         private async void DownloadMessages(ScrollChangedEventArgs e)
         {
+
             if (Math.Abs(e.ExtentHeight - e.ViewportHeight - e.VerticalOffset) > 0.05) return;
             if (SelectedUser == null) return;
             try
@@ -182,6 +183,8 @@ namespace CryptIt.ViewModel
                 var uploadedFile = await _fileService.UploadFile("crypt.crypt", SelectedUser.Id);
                 attachment.Document.Id = uploadedFile.Id;
                 attachment.Document.OwnerId = uploadedFile.OwnerId;
+                attachment.Document.Url = uploadedFile.Url;
+                attachment.Document.FileName = uploadedFile.FileName;
                 IsFileUploading = false;                
             }
         }
@@ -296,17 +299,14 @@ namespace CryptIt.ViewModel
                      var cryptedMessage = SignAndData.MakingEnvelope(Message.Body);
                      Message.Body = cryptedMessage;
                      await _messageService.SendMessage(SelectedUser.Id, Message);
-                    //Message.Attachments?.Clear();
-                    //Message.Body = string.Empty;
-                    Message = new Message();
+                     Message = new Message();
 
                 }
             }
             catch (WebException)
             {
                 ShowWebErrorMessage();
-            }
-            
+            }           
         }
 
         public Message Message
@@ -389,29 +389,32 @@ namespace CryptIt.ViewModel
             ErrorMessage = "Потеряно соединение с сервером";
         }
 
-        private void DownloadFile(Document doc)
+        private async void DownloadFile(Attachment attachment)
         {
-
-            var dialog = new SaveFileDialog();
-            dialog.FileName = "crypt.crypt";
+            var dialog = new FolderBrowserDialog();
+           
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                var pathItems = dialog.FileName.Split('\\').ToList();
-                pathItems.RemoveAt(pathItems.Count - 1); //удаляем имя файла
-                var path = string.Join("\\", pathItems);
+                var path = dialog.SelectedPath;
+                var fileName = "crypt.crypt";
+                if (!attachment.IsEncrypted)
+                {
+                    fileName = attachment.File.FileName;
+                }
+                await _fileService.DownloadFile(attachment.File.Url, path, fileName);
 
-                _fileService.DownloadFile(doc.Url, dialog.FileName);
-                SignAndData.DecryptFile(dialog.FileName,path+"\\"+doc.FileName, "babasahs");
-            }
-                
+                if (attachment.IsEncrypted)
+                {
+                    SignAndData.DecryptFile(path + "\\crypt.crypt", path+"\\"+attachment.File.FileName, "babasahs");
+                }
+            }                
         }
-        public DelegateCommand<Document> DownloadFileCommand { get; set; }
+        public DelegateCommand<Attachment> DownloadFileCommand { get; set; }
 
         private void TakeFileNamesFromBody(Message message)
         {
             if (message.Attachments != null && message.Attachments.Any())
             {
-
                 //парсим имена файлов (текст#имя_файла1,имя_файла2)
                 var probablyFiles = message.Body.Split('#').Last();
                 var cryptedfileNames = probablyFiles.Split(',').ToList();
@@ -424,6 +427,7 @@ namespace CryptIt.ViewModel
                 foreach (var attachment in message.Attachments) //восстанавливаем имена зашифрованных из message.body
                 {
                     attachment.Document.FileName = cryptedfileNames[message.Attachments.IndexOf(attachment)];
+                    attachment.IsEncrypted = true;
                 }
             }
         }

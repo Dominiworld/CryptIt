@@ -15,7 +15,7 @@ namespace CryptingTool
         public static CngKey senderKeySignature;
         public static byte[] senderPubKeyBlob;
 
-        public static byte[] IV;
+        public static byte[] IV = ASCIIEncoding.UTF8.GetBytes("ahjsyehwgsbckfbd");
 
         #region Работаем с цифровой подписью(Алгоритм ECDsa)
         /*Описание: Далее идет алгоритм создания цифровой подписи с использованием Алгоритма ECDsa.
@@ -29,7 +29,7 @@ namespace CryptingTool
         */
 
 
-       private static void CreateKeys()
+        private static void CreateKeys()
         {
             /* Метод Create(): класса CngKey в качестве аргумента получает алгоритм. С помощью метода Export() 
                из пары ключей экспортируется открытый ключ. Этот открытый ключ может быть предоставлен получателю, 
@@ -251,8 +251,8 @@ namespace CryptingTool
             {
             //Шифруем любой тип файлов по алгоритму aes
             RijndaelManaged aes = new RijndaelManaged();
-            aes.GenerateIV();
-            IV = aes.IV;
+            
+
             try
             {
                 byte[] key = ASCIIEncoding.UTF8.GetBytes(skey);//skey минимум 8 символов
@@ -260,7 +260,7 @@ namespace CryptingTool
                 //byte[] IV = ASCIIEncoding.UTF8.GetBytes(sIV);
                 using (FileStream fsCrypt = new FileStream(outputFile, FileMode.Create))
                 {
-                    using (CryptoStream cs = new CryptoStream(fsCrypt, aes.CreateEncryptor(key, aes.IV),
+                    using (CryptoStream cs = new CryptoStream(fsCrypt, aes.CreateEncryptor(key, IV),
                         CryptoStreamMode.Write))
                     //using (CryptoStream cs = new CryptoStream(fsCrypt, aes.CreateEncryptor(key, key),
                     //    CryptoStreamMode.Write))
