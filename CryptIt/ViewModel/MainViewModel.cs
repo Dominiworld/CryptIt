@@ -32,7 +32,7 @@ namespace CryptIt.ViewModel
         private User _selectedUser;
         private List<Message> _messages;
         private List<User> _friends;
-        private string _message;
+        private Message _message;
         private Document _fileToUpload;
         private bool _isFileUploading;
         private List<User> _foundFriends;
@@ -161,13 +161,14 @@ namespace CryptIt.ViewModel
             {
                 return;
             }
-            var dialog = new OpenFileDialog {Multiselect = true};
+            var dialog = new OpenFileDialog();
             if (dialog.ShowDialog()==true)
             {
                 if (Message.Attachments == null)
                 {
                     Message.Attachments = new ObservableCollection<Attachment>();
                 }
+                //todo multiselect
                 var pathItems = dialog.FileName.Split('\\');
                 var attachment = new Attachment
                 {
@@ -295,7 +296,8 @@ namespace CryptIt.ViewModel
                      var cryptedMessage = SignAndData.MakingEnvelope(Message.Body);
                      Message.Body = cryptedMessage;
                      await _messageService.SendMessage(SelectedUser.Id, Message);
-                    Message.Attachments?.Clear();
+                    //Message.Attachments?.Clear();
+                    //Message.Body = string.Empty;
                     Message = new Message();
 
                 }
@@ -307,7 +309,15 @@ namespace CryptIt.ViewModel
             
         }
 
-        public Message Message { get; set; }
+        public Message Message
+        {
+            get { return _message; }
+            set
+            {
+                _message = value;
+                OnPropertyChanged();
+            }
+        }
 
         public List<User> Friends
         {
@@ -381,8 +391,19 @@ namespace CryptIt.ViewModel
 
         private void DownloadFile(Document doc)
         {
-            _fileService.DownloadFile(doc.Url);
-            SignAndData.DecryptFile("crypt.crypt",doc.FileName, "babasahs");
+
+            var dialog = new SaveFileDialog();
+            dialog.FileName = "crypt.crypt";
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                var pathItems = dialog.FileName.Split('\\').ToList();
+                pathItems.RemoveAt(pathItems.Count - 1); //удаляем имя файла
+                var path = string.Join("\\", pathItems);
+
+                _fileService.DownloadFile(doc.Url, dialog.FileName);
+                SignAndData.DecryptFile(dialog.FileName,path+"\\"+doc.FileName, "babasahs");
+            }
+                
         }
         public DelegateCommand<Document> DownloadFileCommand { get; set; }
 

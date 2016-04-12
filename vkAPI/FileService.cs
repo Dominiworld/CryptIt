@@ -47,12 +47,11 @@ namespace vkAPI
             }
         }
 
-        public void DownloadFile(string url)
+        public void DownloadFile(string url, string path)
         {           
             using (var client = new WebClient())
             {
-                //todo скачивается только 3кб
-               client.DownloadFile(url, "crypt.crypt");
+               client.DownloadFile(url, path);
             }
 
         }
