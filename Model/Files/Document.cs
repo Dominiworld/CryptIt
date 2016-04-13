@@ -1,7 +1,6 @@
-﻿using System.ComponentModel;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace Model
+namespace Model.Files
 {
     public class Document:IBaseFile
     {
