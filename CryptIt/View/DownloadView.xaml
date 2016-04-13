@@ -1,0 +1,40 @@
+﻿<Window x:Class="CryptIt.View.DownloadView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:CryptIt.ViewModel"
+        xmlns:local="clr-namespace:CryptIt.View"
+        xmlns:converters="clr-namespace:CryptIt.Converters"
+
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance vm:DownloadViewModel}"
+        Title="DownloadView" Height="300" Width="300">
+    <Window.Resources>
+        <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+    </Window.Resources>
+        <ListView ItemsSource="{Binding Files}">
+            <ListView.View>
+                <GridView >
+                    
+                    <GridView.Columns>
+                        <GridViewColumn DisplayMemberBinding="{Binding File.FileName}" Header="Имя файла"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding ProgreccPercentString}" Header="Загружено"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding IsNotCompleted}" Header="Статус"/> 
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="Открыть папку" 
+                                            Command="{Binding DataContext.OpenFolderCommand, 
+                                            RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                                            CommandParameter="{Binding}"
+                                            IsEnabled="{Binding Path=IsNotCompleted, Converter={StaticResource InvertBooleanConverter}}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        
+</Window>
