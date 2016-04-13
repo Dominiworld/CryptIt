@@ -15,7 +15,10 @@ namespace CryptIt.ViewModel
         {
             PropertyChangedEventHandler handler = PropertyChanged;
 
-            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         public event EventHandler ClosingRequest;

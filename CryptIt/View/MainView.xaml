@@ -64,6 +64,7 @@
                 
                <ListView.Resources>
                     <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
+                    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
                 </ListView.Resources>
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -112,25 +113,13 @@
                     <ListView BorderThickness="0px" ItemsSource="{Binding Message.Attachments}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <ProgressBar Maximum="100" Minimum="0" Value="{Binding Progress}"
-                                                 Visibility="{Binding IsNotCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                 Width="75px" ToolTip="{Binding ProgreccPercentString}"/>
-                                    <Button Command="{Binding  DataContext.CancelFileUploadCommand, 
-                                        RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
-                                            CommandParameter="{Binding}" >
-                                        <Image Source="../Images/deny.png" Width="10px"/>
-                                    </Button>
-                                    <TextBlock Text="{Binding Document.FullName}"/>
-                                </StackPanel>
-
+                                <TextBlock Text="{Binding Document.FullName}"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
 
                     <Button Content="Выбрать файл" Margin="5,10" Width="97" Height="30" Command="{Binding UploadFileCommand}"/>
-                    <!--<Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Visibility="{Binding IsFileUploading, Converter={StaticResource BooleanToVisibilityConverter}}"></Image>-->
-
+                    <Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Visibility="{Binding IsFileUploading, Converter={StaticResource BooleanToVisibilityConverter}}"></Image>
                 </StackPanel>
                
             </StackPanel>

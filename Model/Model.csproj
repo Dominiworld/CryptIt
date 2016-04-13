@@ -43,17 +43,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Files\Attachment.cs" />
-    <Compile Include="Files\IBaseFile.cs" />
-    <Compile Include="Files\BaseWebFile.cs" />
-    <Compile Include="Files\Photo.cs" />
+    <Compile Include="Attachment.cs" />
+    <Compile Include="IBaseFile.cs" />
+    <Compile Include="Photo.cs" />
     <Compile Include="DialogInfo.cs" />
     <Compile Include="LongPollConnectionSettings.cs" />
     <Compile Include="LongPoolServerResponse.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Files\Document.cs" />
+    <Compile Include="Document.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>

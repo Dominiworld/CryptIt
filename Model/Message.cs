@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Model.Annotations;
-using Model.Files;
 using Newtonsoft.Json;
 
 namespace Model
@@ -46,6 +45,8 @@ namespace Model
                 OnPropertyChanged();
             }
         }
+
+
 
         [JsonProperty("attachments")]
         public ObservableCollection<Attachment> Attachments { get; set; }

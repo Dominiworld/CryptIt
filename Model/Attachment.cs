@@ -1,10 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using Model.Annotations;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
-namespace Model.Files
+namespace Model
 {
-    public class Attachment:BaseWebFile
+    public class Attachment
     {
-
         /// <summary>
         /// "doc", "photo", "audio", "video", "link"
         /// </summary>
@@ -34,6 +42,7 @@ namespace Model.Files
         }
 
         public bool IsEncrypted { get; set; }
-    
-    } 
+
+    }
+  
 }
