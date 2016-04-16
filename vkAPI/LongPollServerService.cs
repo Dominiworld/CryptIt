@@ -72,6 +72,13 @@ namespace vkAPI
                                 .Replace("}","")
                                 .Replace("{","")
                                 .Split(',');
+                            if (attachString.ToList().Count == 1 && attachString[0] == string.Empty)
+                            {
+                                GotNewMessageEvent?.Invoke(message);
+                                break;
+                            }
+                                
+
                             var attachmentIds = attachString
                                 .Where(s => !s.Contains("type")).ToList()
                                 .Select(e => e.Split(':').Last()).ToList();
@@ -79,15 +86,14 @@ namespace vkAPI
                                 .Where(s => s.Contains("type")).ToList()
                                 .Select(e => e.Split(':').Last().Trim(' ')).ToList();
 
-                            //todo нужно передавать в GetDocuments typе (photo, doc, video,...)
-                            //пока работает только для doc
-
-                            var docs = await _fileService.GetDocuments(attachmentIds);
-
-                            var attachments = docs?.Select((t, i) => new Attachment
+                            var dict = new Dictionary<string, string>(); //id - type
+                            for (int i = 0; i < attachmentIds.Count; i++)
                             {
-                                Document = t, Type = types[i]
-                            }).ToList();
+                                dict.Add(attachmentIds[i],types[i]);
+                            }
+
+                            var attachments = await GetFiles(dict);
+
                             if (attachments!=null)
                             {
                                message.Attachments = new ObservableCollection<Attachment>(attachments);
@@ -109,11 +115,31 @@ namespace vkAPI
                         default:
                             break;
                     }
-
-
-
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dict">
+        /// ownerId_Id - type
+        /// </param>
+        /// <returns></returns>
+        private async Task<List<Attachment>> GetFiles(Dictionary<string, string> dict)
+        {
+            var docsIds = dict.Where(i => i.Value == "doc").Select(i => i.Key).ToList();
+            var photosIds = dict.Where(i => i.Value == "photo").Select(i => i.Key).ToList();
+
+            var others = dict.Where(i => i.Value != "doc" && i.Value != "photo").Select(i => i.Key).ToList();
+
+            var docs = await _fileService.GetDocuments(docsIds);
+            var photos = await _fileService.GetPhotos(photosIds);
+
+            var attachments = docs.Select(doc => new Attachment {Document = doc, Type = "doc"}).ToList();
+            attachments.AddRange(photos.Select(photo => new Attachment {Photo = photo, Type = "photo"}));
+            attachments.AddRange(others.Select(file=>new Attachment()));
+            return attachments;
         }
     }
 }

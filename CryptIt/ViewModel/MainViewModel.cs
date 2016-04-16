@@ -264,6 +264,11 @@ namespace CryptIt.ViewModel
             var decryptedMessage = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
             message.Body = decryptedMessage;
             TakeFileNamesFromBody(message);
+            if (message.Attachments!=null && message.Attachments.Where(a => a.File == null).ToList().Count!= 0)
+            {
+                message.HasUndefinedContent = true;
+                message.Attachments = new ObservableCollection<Attachment>(message.Attachments.Where(a => a.File != null));
+            }
 
             if (message.UserId!= SelectedUser.Id && !message.Out)
             {
@@ -328,7 +333,7 @@ namespace CryptIt.ViewModel
 
         private async void SendMessage()
         {
-            if (Message.Attachments.Any(a=>a.IsNotCompleted))
+            if (Message.Attachments!=null && Message.Attachments.Any(a=>a.IsNotCompleted))
             {
                 var errorDialog = MessageBox.Show("Подождите окончания загрузки");               
                 return;               
@@ -412,6 +417,11 @@ namespace CryptIt.ViewModel
                 {
                     message.Body = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
                     TakeFileNamesFromBody(message);
+                    if (message.Attachments!=null && message.Attachments.Where(a => a.File == null).ToList().Count != 0)
+                    {
+                        message.HasUndefinedContent = true;
+                        message.Attachments = new ObservableCollection<Attachment>(message.Attachments.Where(a => a.File != null));
+                    }
                 }
                 Messages = messages;
             }
@@ -448,10 +458,6 @@ namespace CryptIt.ViewModel
             if (dialog.ShowDialog() == DialogResult.OK)
             {             
                 var dc = DownloadView.DataContext as DownloadViewModel;
-                //dc?.Files.Add(new DownloadingFile
-                //{
-                //    FileName = attachment.File.FileName, Url = attachment.File.Url, Path = path, IsEncrypted = attachment.IsEncrypted
-                //});
                 attachment.Path = dialog.SelectedPath;
                 dc?.Files.Add(attachment);
                 

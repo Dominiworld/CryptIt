@@ -47,17 +47,6 @@ namespace vkAPI
         {
             using (var client = new System.Net.WebClient())
             {
-
-                //client.UploadProgressChanged += (sender, args) =>
-                //{
-                //    UploadProgressChangedEvent.Invoke(sender, args);
-                //};
-                //client.UploadFileCompleted += (sender, args) =>
-                //{
-                //    UploadFileCompletedEvent.Invoke(sender, args);
-                //};
-
-                //var r2 = Encoding.UTF8.GetString(await client.UploadFileTaskAsync(url, "POST", fileName));
                 var r2 = Encoding.UTF8.GetString(file);
 
                 var j2 = JsonConvert.DeserializeObject(r2) as JObject;
@@ -76,20 +65,40 @@ namespace vkAPI
             }
         }
 
-
-
         public async Task<List<Document>> GetDocuments(List<string> fullIds)
         {
             if (!fullIds.Any() || (fullIds.Count==1 && fullIds[0]==string.Empty))
             {
-                return null;
+                return new List<Document>();
             }
             var token = AuthorizeService.Instance.AccessToken;
             var ids = string.Join(",", fullIds);
             var url = $"https://api.vk.com/method/docs.getById?docs={ids}&access_token={token}&v=5.45";
             var objs = await GetUrl(url);
+            if (objs["response"] == null)
+            {
+                return new List<Document>();
+            }
             var docs = JsonConvert.DeserializeObject<List<Document>>(objs["response"].ToString());
             return docs.ToList();
+        }
+
+        public async Task<List<Photo>> GetPhotos(List<string> fullIds)
+        {
+            if (!fullIds.Any() || (fullIds.Count == 1 && fullIds[0] == string.Empty))
+            {
+                return new List<Photo>();
+            }
+            var token = AuthorizeService.Instance.AccessToken;
+            var ids = string.Join(",", fullIds);
+            var url = $"https://api.vk.com/method/photos.getById?photos={ids}&access_token={token}&v=5.45";
+            var objs = await GetUrl(url);
+            if (objs["response"] == null)
+            {
+                return new List<Photo>();
+            }
+            var photo = JsonConvert.DeserializeObject<List<Photo>>(objs["response"].ToString());
+            return photo.ToList();
         }
     }
     

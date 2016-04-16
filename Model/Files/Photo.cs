@@ -7,7 +7,7 @@ namespace Model.Files
     {
         [JsonProperty("id")]
         public int Id { get; set; }
-        [JsonProperty("photo_1280")]
+        [JsonProperty("photo_604")]
         public string Url { get; set; }
         [JsonProperty("owner_id")]
         public int OwnerId { get; set; }

@@ -67,7 +67,6 @@ namespace CryptIt.ViewModel
                                              "babasahs");
                     }
                     file.IsNotCompleted = false;
-
                 };
                 await client.DownloadFileTaskAsync(file.File.Url, file.Path + "\\" + fileName);
 

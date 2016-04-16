@@ -6,7 +6,7 @@ namespace Model.Files
     {
 
         /// <summary>
-        /// "doc", "photo", "audio", "video", "link"
+        /// "doc", "photo"
         /// </summary>
         [JsonProperty("type")]
         public string Type { get; set; }
@@ -14,6 +14,7 @@ namespace Model.Files
         public Document Document { get; set; }
         [JsonProperty("photo")]
         public Photo Photo { get; set; }
+
 
         private IBaseFile GetFile()
         {
@@ -30,7 +31,10 @@ namespace Model.Files
 
         public IBaseFile File
         {
-            get { return GetFile(); }
+            get
+            {
+                return GetFile();
+            }
         }
 
         public bool IsEncrypted { get; set; }

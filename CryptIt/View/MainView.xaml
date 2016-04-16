@@ -64,6 +64,7 @@
                 
                <ListView.Resources>
                     <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
+                   <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
                 </ListView.Resources>
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -77,6 +78,9 @@
                             <TextBlock Text="{Binding User.FullName}"/>
                             <TextBlock Text="{Binding Body}"/>
                             <TextBlock Text="{Binding Date}" />
+                            <Image Source="../Images/attention.png" Width="10px" 
+                                   ToolTip="Сообщение содержит неподдерживаемый контент"
+                                   Visibility="{Binding HasUndefinedContent, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             <ListView ItemsSource="{Binding Attachments}" BorderThickness="0px">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>

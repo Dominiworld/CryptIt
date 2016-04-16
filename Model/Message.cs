@@ -47,6 +47,8 @@ namespace Model
             }
         }
 
+        public bool HasUndefinedContent { get; set; }
+
         [JsonProperty("attachments")]
         public ObservableCollection<Attachment> Attachments { get; set; }
 
