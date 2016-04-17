@@ -172,9 +172,13 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\deny.png" />
+    <Resource Include="Images\gas.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\attention.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\downloads.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

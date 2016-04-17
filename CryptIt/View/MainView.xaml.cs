@@ -25,5 +25,10 @@ namespace CryptIt.View
             InitializeComponent();
             DataContext = new MainViewModel();
         }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
 }

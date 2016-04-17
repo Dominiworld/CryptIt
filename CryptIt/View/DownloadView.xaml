@@ -9,26 +9,28 @@
 
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:DownloadViewModel}"
-        Title="DownloadView" Height="300" Width="300">
+        Title="DownloadView" Height="300" Width="600" ResizeMode="CanResizeWithGrip">
     <Window.Resources>
         <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
     </Window.Resources>
-        <ListView ItemsSource="{Binding Files}">
+    <ListView ItemsSource="{Binding Files}" Background="#2e72a3" Foreground="#fff">
             <ListView.View>
-                <GridView >
-                    
+            <GridView>
+                
                     <GridView.Columns>
-                        <GridViewColumn DisplayMemberBinding="{Binding File.FileName}" Header="Имя файла"/>
-                        <GridViewColumn DisplayMemberBinding="{Binding ProgreccPercentString}" Header="Загружено"/>
-                        <GridViewColumn DisplayMemberBinding="{Binding IsNotCompleted}" Header="Статус"/> 
-                        <GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding File.FileName}" Header="Имя файла" Width="200">
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding ProgreccPercentString}" Header="Загружено" Width="50"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding IsNotCompleted}" Header="Статус"/>
+                    <GridViewColumn Width="200">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Content="Открыть папку" 
                                             Command="{Binding DataContext.OpenFolderCommand, 
                                             RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
                                             CommandParameter="{Binding}"
-                                            IsEnabled="{Binding Path=IsNotCompleted, Converter={StaticResource InvertBooleanConverter}}"/>
+                                            IsEnabled="{Binding Path=IsNotCompleted, Converter={StaticResource InvertBooleanConverter}}" Width="100"/>
+                                    
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
