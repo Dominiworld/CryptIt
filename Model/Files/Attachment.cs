@@ -38,6 +38,9 @@ namespace Model.Files
         }
 
         public bool IsEncrypted { get; set; }
-    
-    } 
+
+        public string EncryptedSymmetricKey { get; set; }
+
+
+    }
 }

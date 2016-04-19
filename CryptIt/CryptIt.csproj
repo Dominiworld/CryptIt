@@ -89,6 +89,7 @@
     <Compile Include="Commands\CommandReference.cs" />
     <Compile Include="Commands\DelegateCommand.cs" />
     <Compile Include="Converters\InvertBooleanConverter.cs" />
+    <Compile Include="Converters\InvertBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\UnreadToColorConverter.cs" />
     <Compile Include="RoutedEventTrigger.cs" />
     <Compile Include="ViewModel\DownloadViewModel.cs" />

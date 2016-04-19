@@ -9,6 +9,8 @@ namespace Model
     public class User: INotifyPropertyChanged
     {
         private int? _numberOfNewMessages;
+        private bool _keyExists;
+        private string _key;
 
         [JsonProperty("id")]
         public int Id { get; set; }
@@ -47,6 +49,19 @@ namespace Model
                 OnPropertyChanged();
             }
         }
+
+        public bool KeyExists
+        {
+            get { return _keyExists; }
+            set
+            {
+                if (value == _keyExists) return;
+                _keyExists = value;
+                OnPropertyChanged();
+            }
+        }
+
+        
 
         public event PropertyChangedEventHandler PropertyChanged;
 

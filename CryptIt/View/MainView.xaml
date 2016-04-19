@@ -9,7 +9,7 @@
         xmlns:cmd ="http://www.galasoft.ch/mvvmlight" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:MainViewModel}"
-        Title="MainView" Height="600" Width="800" ResizeMode="NoResize">
+        Title="MainView" Height="600" Width="800">
     <!--Кароль величин-->
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
@@ -22,6 +22,7 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
+
         <Border Background="#1f5071" Height="70" Margin="0,0,0,496" Grid.ColumnSpan="2"/>
         <Border Background="#215680" Height="70" Margin="0,0,0,500" Grid.ColumnSpan="2"/>
 
@@ -37,8 +38,6 @@
 
         <Border Background="#a2b6c6" Margin="0,67,69,379" HorizontalAlignment="Right" Width="328"/>
         <TextBlock FontFamily="Helvetica" Foreground="#fff" Text="Друзья" FontSize="15" Margin="128,78,139,365" RenderTransformOrigin="0.429,0.976"/>
-
-
 
         <Grid Margin="0,74,0,34">
             <Grid.ColumnDefinitions>
@@ -146,7 +145,7 @@
                 </ListView.ItemTemplate>
                 <i:Interaction.Triggers>
                     <local:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
-                        <!--<cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />-->
+                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
                     </local:RoutedEventTrigger>
                 </i:Interaction.Triggers>
 
@@ -156,11 +155,16 @@
             <TextBox Grid.Row="2" Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="-67,2,0,24" Grid.RowSpan="2"></TextBox>
             <StackPanel Grid.Row="3" Margin="-16,50,-13,-12" Grid.RowSpan="2">
                 <StackPanel.Resources>
-                    <BooleanToVisibilityConverter x:Key ="BooleanToVisibilityConverter"/>
+                    <BooleanToVisibilityConverter  x:Key ="BooleanToVisibilityConverter"/>
+                    <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
                 </StackPanel.Resources>
-                <Button  Content="Отправить" Command="{Binding SendMessageCommand}" Height="29" Margin="0,0,200,0" Width="Auto"/>
+                <Button  Content="Отправить" Command="{Binding SendMessageCommand}" Height="29" Margin="0,0,263,0" Width="Auto"
+                         IsEnabled="{Binding SelectedUser.KeyExists}"/>
+                <Button Content="Добавить ключ" Command="{Binding SetFriendKeyCommand}" CommandParameter="{Binding SelectedUser.Id}"
+                        Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}"/>
                 <StackPanel Orientation="Horizontal" Margin="0,-50,34,0" Height="173">
-                    <ListView BorderThickness="0px" ItemsSource="{Binding Message.Attachments}" SelectionChanged="ListView_SelectionChanged" Height="66" Width="226" Background="#2e72a3" Margin="0,54,10,53">
+                    <ListView BorderThickness="0px" ItemsSource="{Binding Message.Attachments}"
+                              Height="66" Width="226" Background="#2e72a3" Margin="0,54,10,53">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -177,7 +181,7 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <Button Content="Выбрать файл" Margin="0,-100,0,0" Width="100" Height="30" Command="{Binding UploadFileCommand}"/>
+                    <Button Content="Выбрать файл" Margin="0,22,0,121" Width="100" Height="30" Command="{Binding UploadFileCommand}"/>
                     <!--<Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Visibility="{Binding IsFileUploading, Converter={StaticResource BooleanToVisibilityConverter}}"></Image>-->
 
                 </StackPanel>

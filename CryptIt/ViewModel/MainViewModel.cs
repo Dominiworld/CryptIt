@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -40,8 +41,13 @@ namespace CryptIt.ViewModel
         private string _errorMessage;
         private DownloadView _downloadView;
 
+        private string _keysFileName = "keys.txt";
+
+        private readonly CryptTool _cryptTool = CryptTool.Instance;
+
         public MainViewModel()
         {
+           
             _messageService = new MessageService();
             _userService = new UserService();
             _longPollServer = new LongPollServerService();
@@ -57,13 +63,64 @@ namespace CryptIt.ViewModel
             {
                 DownloadView = new DownloadView();
             };
-
+            SetFriendKeyCommand = new DelegateCommand(SetFriendKey);
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
             DownloadMessagesCommand = new DelegateCommand<ScrollChangedEventArgs>(DownloadMessages);
             DownloadFileCommand = new DelegateCommand<Attachment>(DownloadFile);
             CancelFileUploadCommand = new DelegateCommand<Attachment>(CancelFileUpload);
             GetStartInfo();
+            //todo известить друзей о новом ключе
+            if (SetKeys("my_public.txt", "my_private.txt"))
+            {
+                MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ собеседникам.");
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="myPublicKeyFileName"></param>
+        /// <param name="myPrivateKeyFileName"></param>
+        /// <returns>
+        /// true - ключи старые, false - новые
+        /// </returns>
+        private bool SetKeys(string myPublicKeyFileName, string myPrivateKeyFileName)
+        {
+
+            var myId = AuthorizeService.Instance.CurrentUserId;
+            if (File.Exists(myPublicKeyFileName) && File.Exists(myPrivateKeyFileName))
+            {
+
+                var reader = new StreamReader(myPrivateKeyFileName);
+                var line = reader.ReadToEnd();
+                if (line!=string.Empty)
+                {
+                    _cryptTool.keyRSAPrivate = Encoding.Default.GetBytes(line.FromBase64());
+                    reader = new StreamReader(myPublicKeyFileName);
+                    line = reader.ReadToEnd();
+                    var data = line.Split(' ');
+                    if (line!=string.Empty && data.Length == 2)
+                    {
+                        int id;
+                        if (int.TryParse(data[0], out id) && id == myId)
+                        {
+                            _cryptTool.keyRSAPublic = Encoding.Default.GetBytes(data[1].FromBase64());
+                            reader.Dispose();
+                            return false;
+                        }
+                    }
+                } 
+                reader.Dispose();              
+            }
+
+            _cryptTool.CreateRSAKey();                
+            var writer = new StreamWriter(myPublicKeyFileName);        
+            writer.Write(myId+ " " + Encoding.Default.GetString(_cryptTool.keyRSAPublic).ToBase64());
+            writer.Close();
+            writer = new StreamWriter(myPrivateKeyFileName);
+            writer.Write(Encoding.Default.GetString(_cryptTool.keyRSAPrivate).ToBase64());
+            writer.Close();
+            return true;
         }
 
         public string ErrorMessage
@@ -181,12 +238,13 @@ namespace CryptIt.ViewModel
 
                 UploadingFilesAmount++;
 
-                SignAndData.EncryptFile(dialog.FileName, "crypt.crypt"+UploadingFilesAmount, "babasahs"); //todo change key
+                var key = _cryptTool.EncryptFile(dialog.FileName, "crypt.crypt" + UploadingFilesAmount);
            
                 var uploadedFile = await UploadFile("crypt.crypt" + UploadingFilesAmount, SelectedUser.Id, attachment);
                 UploadingFilesAmount--;
                 if (uploadedFile == null)
                 {
+                    Message.Attachments.Remove(attachment);
                     return;
                 }
 
@@ -194,6 +252,8 @@ namespace CryptIt.ViewModel
                 attachment.Document.OwnerId = uploadedFile.OwnerId;
                 attachment.Document.Url = uploadedFile.Url;
                 attachment.Document.FileName = uploadedFile.FileName;
+                attachment.EncryptedSymmetricKey = key;
+
             }
         }
 
@@ -261,7 +321,7 @@ namespace CryptIt.ViewModel
             if (SelectedUser == null)
                 return;
 
-            var decryptedMessage = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
+            var decryptedMessage = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
             message.Body = decryptedMessage;
             TakeFileNamesFromBody(message);
             if (message.Attachments!=null && message.Attachments.Where(a => a.File == null).ToList().Count!= 0)
@@ -330,7 +390,6 @@ namespace CryptIt.ViewModel
             GetDialogsInfo();
         }
 
-
         private async void SendMessage()
         {
             if (Message.Attachments!=null && Message.Attachments.Any(a=>a.IsNotCompleted))
@@ -338,10 +397,10 @@ namespace CryptIt.ViewModel
                 var errorDialog = MessageBox.Show("Подождите окончания загрузки");               
                 return;               
             }
-            //добавляем полные имена файлов для расшифровки (# - для отделения имен от body)
+            //добавляем полные имена файлов для расшифровки (#имя:ключ,имя:ключ)
             if (Message.Attachments!=null && Message.Attachments.Any())
             {
-                Message.Body += '#' + string.Join(",", Message.Attachments.Select(a => a.Document.FullName).ToList());
+                Message.Body += '#' + string.Join(",", Message.Attachments.Select(a => a.Document.FullName+":"+a.EncryptedSymmetricKey).ToList());
             }
 
             try
@@ -350,7 +409,7 @@ namespace CryptIt.ViewModel
                 return;
                 if (!string.IsNullOrEmpty(Message.Body))
                 {
-                     var cryptedMessage = SignAndData.MakingEnvelope(Message.Body);
+                     var cryptedMessage = _cryptTool.MakingEnvelope(Message.Body);
                      Message.Body = cryptedMessage;
                      await _messageService.SendMessage(SelectedUser.Id, Message);
                      Message = new Message();
@@ -401,10 +460,33 @@ namespace CryptIt.ViewModel
             {
                 _selectedUser = value;
                 GetMessages();
+                GetKey(_keysFileName);
                 OnPropertyChanged();
             }
         }
 
+        private void GetKey(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                using (var reader = new StreamReader(fileName))
+                {
+                    string line;
+                    while ((line = reader.ReadLine())!=null)
+                    {
+                        var data = line.Split(' ');
+                        int id;
+                        if (int.TryParse(data[0], out id) && id == SelectedUser.Id && data.Length==2)
+                        {                           
+                            //SelectedUser.Key = data[1].FromBase64();
+                            SelectedUser.KeyExists = true;
+                            _cryptTool.SetRSAKey(data[1].FromBase64());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         private async void GetMessages()
         {
@@ -415,7 +497,7 @@ namespace CryptIt.ViewModel
                 var messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
                 foreach (var message in messages.ToArray())
                 {
-                    message.Body = SignAndData.SplitAndUnpackReceivedMessage(message.Body);
+                    message.Body = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
                     TakeFileNamesFromBody(message);
                     if (message.Attachments!=null && message.Attachments.Where(a => a.File == null).ToList().Count != 0)
                     {
@@ -447,6 +529,45 @@ namespace CryptIt.ViewModel
            // MessageBox.Show("Потеряно соединение с сервером", "Ошибка");
             ErrorMessage = "Потеряно соединение с сервером";
         }
+
+        public DelegateCommand SetFriendKeyCommand { get; set; }
+
+        private void SetFriendKey()
+        {
+            var dialog = new OpenFileDialog();
+            if (dialog.ShowDialog() != true)
+                return;
+
+            var fileName = dialog.FileName;
+            string key;
+            using (var reader = new StreamReader(fileName))
+            {
+                var line = reader.ReadLine();
+                if (line == null)
+                {
+                    MessageBox.Show("Выбран неверный файл или файл поврежден!");
+                    return;
+                }
+                var data = line.Split(' ');
+                int id;
+                if (!(int.TryParse(data[0], out id) && data.Length==2 && SelectedUser.Id == id))
+                {
+                    MessageBox.Show("Выбран неверный файл или файл поврежден!");
+                    return;
+                }
+                //SelectedUser.Key = data[1];
+                SelectedUser.KeyExists = true;
+                key = data[1];
+                _cryptTool.SetRSAKey(key.FromBase64());
+            }
+                        
+            using (var writer = new StreamWriter(_keysFileName, true))
+            {
+                writer.WriteLine(SelectedUser.Id + " " +key);
+                writer.Close();
+            }
+        }
+
 
 
         private DownloadView DownloadView { get; set; }
@@ -490,17 +611,19 @@ namespace CryptIt.ViewModel
             {
                 //парсим имена файлов (текст#имя_файла1,имя_файла2)
                 var probablyFiles = message.Body.Split('#').Last();
-                var cryptedfileNames = probablyFiles.Split(',').ToList();
+                var cryptedfileNamesWithKeys = probablyFiles.Split(',').ToList();
                 //todo условие может поломаться!!!
-                if (!message.Body.Contains('#') || cryptedfileNames.Count != message.Attachments.Count ||
-                    (string.IsNullOrEmpty(cryptedfileNames[0]) && cryptedfileNames.Count == 1))
+                if (!message.Body.Contains('#') || cryptedfileNamesWithKeys.Count != message.Attachments.Count ||
+                    (string.IsNullOrEmpty(cryptedfileNamesWithKeys[0]) && cryptedfileNamesWithKeys.Count == 1))
                     //сообщение не шифрованное или ошибка
                     return;
                 message.Body = message.Body.Substring(0, message.Body.Length - probablyFiles.Length - 1);
                 foreach (var attachment in message.Attachments) //восстанавливаем имена зашифрованных из message.body
                 {
-                    attachment.Document.FileName = cryptedfileNames[message.Attachments.IndexOf(attachment)];
+                    var items = cryptedfileNamesWithKeys[message.Attachments.IndexOf(attachment)].Split(':');
+                    attachment.Document.FileName = items[0];
                     attachment.IsEncrypted = true;
+                    attachment.EncryptedSymmetricKey = items[1];
                 }
             }
         }

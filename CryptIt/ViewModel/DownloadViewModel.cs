@@ -15,8 +15,10 @@ using Model.Files;
 
 namespace CryptIt.ViewModel
 {
-    public class DownloadViewModel:ViewModelBase
+    public class DownloadViewModel : ViewModelBase
     {
+        private readonly CryptTool _cryptTool = CryptTool.Instance;
+
         public DownloadViewModel()
         {
             Files = new ObservableCollection<Attachment>();
@@ -63,8 +65,9 @@ namespace CryptIt.ViewModel
                 {
                     if (file.IsEncrypted)
                     {
-                        SignAndData.DecryptFile(file.Path + "\\" + fileName, file.Path + "\\" + file.File.FileName,
-                                             "babasahs");
+                        _cryptTool.DecryptFile(file.Path + "\\" + fileName,
+                            file.Path + "\\" + file.File.FileName,
+                                             file.EncryptedSymmetricKey);
                     }
                     file.IsNotCompleted = false;
                 };
