@@ -86,6 +86,12 @@ namespace vkAPI
                                 .Where(s => s.Contains("type")).ToList()
                                 .Select(e => e.Split(':').Last().Trim(' ')).ToList();
 
+                            if (attachmentIds.Count!=types.Count)
+                            {
+                                GotNewMessageEvent?.Invoke(message);
+                                break;
+                            }
+
                             var dict = new Dictionary<string, string>(); //id - type
                             for (int i = 0; i < attachmentIds.Count; i++)
                             {
@@ -107,10 +113,10 @@ namespace vkAPI
                             MessageStateChangedToReadEvent?.Invoke(lastReadMessageId, userId);
                             break;
                         case 8:
-                            UserBecameOnlineOrOfflineEvent?.Invoke(int.Parse(update[0].ToString()), true);
+                            UserBecameOnlineOrOfflineEvent?.Invoke(-1 * int.Parse(update[1].ToString()), true);
                             break;
                         case 9:
-                            UserBecameOnlineOrOfflineEvent?.Invoke(int.Parse(update[0].ToString()), false);
+                            UserBecameOnlineOrOfflineEvent?.Invoke(-1 * int.Parse(update[1].ToString()), false);
                             break;
                         default:
                             break;

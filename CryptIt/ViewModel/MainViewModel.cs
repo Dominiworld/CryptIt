@@ -4,8 +4,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
@@ -35,11 +37,10 @@ namespace CryptIt.ViewModel
         private List<Message> _messages;
         private List<User> _friends;
         private Message _message;
-        private Document _fileToUpload;
         private List<User> _foundFriends;
         private string _searchString;
-        private string _errorMessage;
         private DownloadView _downloadView;
+
 
         private string _keysFileName = "keys.txt";
 
@@ -69,6 +70,7 @@ namespace CryptIt.ViewModel
             DownloadMessagesCommand = new DelegateCommand<ScrollChangedEventArgs>(DownloadMessages);
             DownloadFileCommand = new DelegateCommand<Attachment>(DownloadFile);
             CancelFileUploadCommand = new DelegateCommand<Attachment>(CancelFileUpload);
+            OpenDialogCommand = new DelegateCommand<User>(OpenDialog);
             GetStartInfo();
             //todo известить друзей о новом ключе
             if (SetKeys("my_public.txt", "my_private.txt"))
@@ -76,6 +78,18 @@ namespace CryptIt.ViewModel
                 MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ собеседникам.");
             }
         }
+
+        public DelegateCommand<User> OpenDialogCommand { get; set; }
+
+        private async void OpenDialog(User user)
+        {
+            IsMessageLoaderVisible = true;
+           
+            await GetMessages(user);
+            
+            IsMessageLoaderVisible = false;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -86,7 +100,6 @@ namespace CryptIt.ViewModel
         /// </returns>
         private bool SetKeys(string myPublicKeyFileName, string myPrivateKeyFileName)
         {
-
             var myId = AuthorizeService.Instance.CurrentUserId;
             if (File.Exists(myPublicKeyFileName) && File.Exists(myPrivateKeyFileName))
             {
@@ -123,13 +136,14 @@ namespace CryptIt.ViewModel
             return true;
         }
 
-        public string ErrorMessage
+        public bool IsConnectionFailed
         {
-            get { return _errorMessage; }
+            get { return _isConnectionFailed; }
             set
             {
-                _errorMessage = value;
+                _isConnectionFailed = value; 
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsSendButtonEnabled));
             }
         }
 
@@ -390,8 +404,20 @@ namespace CryptIt.ViewModel
             GetDialogsInfo();
         }
 
+        public bool IsMessageSending
+        {
+            get { return _isMessageSending; }
+            set
+            {
+                _isMessageSending = value; 
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsSendButtonEnabled));
+            }
+        }
+
         private async void SendMessage()
         {
+            IsMessageSending = true;
             if (Message.Attachments!=null && Message.Attachments.Any(a=>a.IsNotCompleted))
             {
                 var errorDialog = MessageBox.Show("Подождите окончания загрузки");               
@@ -404,22 +430,30 @@ namespace CryptIt.ViewModel
             }
 
             try
-            {           
+            {
                 if (string.IsNullOrEmpty(Message.Body) && (Message.Attachments == null || !Message.Attachments.Any()))
-                return;
+                    return;
                 if (!string.IsNullOrEmpty(Message.Body))
                 {
-                     var cryptedMessage = _cryptTool.MakingEnvelope(Message.Body);
-                     Message.Body = cryptedMessage;
-                     await _messageService.SendMessage(SelectedUser.Id, Message);
-                     Message = new Message();
-
+                    var cryptedMessage = _cryptTool.MakingEnvelope(Message.Body);
+                    Message.Body = cryptedMessage;
+                    await _messageService.SendMessage(SelectedUser.Id, Message);
+                    Message = new Message();
                 }
             }
             catch (WebException)
             {
                 ShowWebErrorMessage();
-            }           
+            }
+            finally
+            {
+                IsMessageSending = false;
+            }
+        }
+
+        public bool IsSendButtonEnabled
+        {
+            get { return SelectedUser.KeyExists && !IsMessageSending && !IsConnectionFailed; }
         }
 
         public Message Message
@@ -452,21 +486,41 @@ namespace CryptIt.ViewModel
             }
         }
 
-        public User SelectedUser
+        public bool IsMessageLoaderVisible
         {
-            get {
-                return _selectedUser; }
+            get { return _isMessageLoaderVisible; }
             set
             {
+                _isMessageLoaderVisible = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public User SelectedUser
+        {
+            get
+            {
+                return _selectedUser;
+            }
+            set
+            {
+                if (value == _selectedUser)
+                {
+                    return;
+                }
                 _selectedUser = value;
-                GetMessages();
                 GetKey(_keysFileName);
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsSendButtonEnabled));
+
             }
         }
 
         private void GetKey(string fileName)
         {
+            if (SelectedUser == null)
+                return;
+            
             if (File.Exists(fileName))
             {
                 using (var reader = new StreamReader(fileName))
@@ -488,12 +542,12 @@ namespace CryptIt.ViewModel
             }
         }
 
-        private async void GetMessages()
+        private async Task GetMessages(User user)
         {
-            if (SelectedUser == null)
-                return;
+            var previousSelected = SelectedUser;
             try
             {
+                SelectedUser = user;
                 var messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
                 foreach (var message in messages.ToArray())
                 {
@@ -505,10 +559,19 @@ namespace CryptIt.ViewModel
                         message.Attachments = new ObservableCollection<Attachment>(message.Attachments.Where(a => a.File != null));
                     }
                 }
+
+                if (messages.Count > 0 && messages[0].UserId!=SelectedUser.Id)
+                {
+                    var inMessage = messages.FirstOrDefault(m => !m.Out);
+                    SelectedUser = inMessage != null ? inMessage.User : await _userService.GetUser(SelectedUser.Id);
+                }
+
                 Messages = messages;
+
             }
             catch (NullReferenceException ex)
             {
+                SelectedUser = previousSelected;
                 return;
             }
             catch (WebException ex)
@@ -524,10 +587,14 @@ namespace CryptIt.ViewModel
             }
         }
 
-        private void ShowWebErrorMessage()
+        private async void ShowWebErrorMessage()
         {
-           // MessageBox.Show("Потеряно соединение с сервером", "Ошибка");
-            ErrorMessage = "Потеряно соединение с сервером";
+            IsConnectionFailed = true;
+
+            while (IsConnectionFailed)
+            {
+                await Task.Run(() => PingServer());
+            }
         }
 
         public DelegateCommand SetFriendKeyCommand { get; set; }
@@ -568,7 +635,24 @@ namespace CryptIt.ViewModel
             }
         }
 
+        private void PingServer()
+        {
+            try
+            {
+                Ping pingSender = new Ping();
+                PingReply reply = pingSender.Send("vk.com");
 
+                if (reply != null && reply.Status == IPStatus.Success)
+                {
+                    IsConnectionFailed = false;
+                    
+                }
+            }
+            catch (Exception)
+            {
+                return;
+            }           
+        }
 
         private DownloadView DownloadView { get; set; }
 
@@ -593,6 +677,10 @@ namespace CryptIt.ViewModel
         private delegate void CancelFileUploadDelegate(Attachment attachment);
 
         private CancelFileUploadDelegate _cancelFileUploadEvent;
+        private bool _isConnectionFailed;
+        private bool _isMessageSending;
+        private bool _isSendButtonEnabled;
+        private bool _isMessageLoaderVisible;
 
         private void CancelFileUpload(Attachment attachment)
         {

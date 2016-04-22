@@ -88,8 +88,11 @@
     </ApplicationDefinition>
     <Compile Include="Commands\CommandReference.cs" />
     <Compile Include="Commands\DelegateCommand.cs" />
+    <Compile Include="Converters\BooleanToVisibleOrHiddenConverter.cs" />
     <Compile Include="Converters\InvertBooleanConverter.cs" />
     <Compile Include="Converters\InvertBooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\IsUserSelectedToVisibilityConverter.cs" />
+    <Compile Include="Converters\IsUserNotSelectedToVisibilityConverter.cs" />
     <Compile Include="Converters\UnreadToColorConverter.cs" />
     <Compile Include="RoutedEventTrigger.cs" />
     <Compile Include="ViewModel\DownloadViewModel.cs" />
@@ -108,6 +111,12 @@
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ConnectionFailed.xaml.cs">
+      <DependentUpon>ConnectionFailed.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\NoDialogSelected.xaml.cs">
+      <DependentUpon>NoDialogSelected.xaml</DependentUpon>
+    </Compile>
     <Page Include="View\BrowserView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -125,6 +134,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\MainView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ConnectionFailed.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\NoDialogSelected.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -180,6 +197,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\downloads.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\loading.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

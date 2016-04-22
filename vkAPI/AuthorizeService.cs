@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -17,14 +18,15 @@ namespace vkAPI
 
         protected AuthorizeService() { }
 
+
         public string AccessToken { get; set; }
         public int CurrentUserId { get; set; }
 
         public User CurrentUser { get; set; }
 
-        public string GetAuthorizeUrl(int appId)
+        public string GetAuthorizeUrl()
         {
-
+            var appId = int.Parse(ConfigurationManager.AppSettings["app_id"]);
             //var url =
             //    $"https://oauth.vk.com/authorize?client_id={appId}&display=popup&revoke=1&scope=friends,messages,docs&response_type=token&redirect_uri=https://oauth.vk.com/blank.html&v=5.45";
 
@@ -37,6 +39,5 @@ namespace vkAPI
         {
             CurrentUser = await new UserService().GetUser(CurrentUserId);
         }
-
     }
 }

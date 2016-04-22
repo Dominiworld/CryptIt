@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Runtime.CompilerServices;
 using Model.Annotations;
 using Newtonsoft.Json;
@@ -23,6 +24,8 @@ namespace Model
         public string PhotoUrl { get; set; }
         [JsonProperty("online")]
         public int Online { get; set; }
+        [JsonProperty("online_app")]
+        public int OnlineApp { get; set; }
 
         public string Status
         {
@@ -32,7 +35,11 @@ namespace Model
                 {
                     return "";
                 }
-                return "Online";
+                if (OnlineApp!= int.Parse(ConfigurationManager.AppSettings["app_id"]))
+                {
+                    return "Online";
+                }
+                return "Online_app";
             }
         }
 

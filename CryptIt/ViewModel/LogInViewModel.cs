@@ -31,7 +31,7 @@ namespace CryptIt.ViewModel
             _userService = new UserService();
             
             
-            AuthorizeUrl = AuthorizeService.Instance.GetAuthorizeUrl(5296011);
+            AuthorizeUrl = AuthorizeService.Instance.GetAuthorizeUrl();
             AuthorizeCommand = new DelegateCommand(Authorize);
         }
 
