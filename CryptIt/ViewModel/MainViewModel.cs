@@ -21,6 +21,7 @@ using CryptIt.View;
 using Model;
 using Model.Files;
 using vkAPI;
+using ListView = System.Windows.Controls.ListView;
 using Message = Model.Message;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -77,6 +78,8 @@ namespace CryptIt.ViewModel
             {
                 MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ собеседникам.");
             }
+
+           
         }
 
         public DelegateCommand<User> OpenDialogCommand { get; set; }
@@ -171,23 +174,47 @@ namespace CryptIt.ViewModel
 
         public DelegateCommand<ScrollChangedEventArgs> DownloadMessagesCommand { get; set; }
 
+        private bool ScrollToEnd { get; set; }
+
         private async void DownloadMessages(ScrollChangedEventArgs e)
         {
-
-            if (Math.Abs(e.ExtentHeight - e.ViewportHeight - e.VerticalOffset) > 0.05) return;
             if (SelectedUser == null) return;
-            try
+
+
+            if (e.VerticalOffset == 0 && e.VerticalChange < 0)
             {
-                var nextMessages = (await _messageService.GetDialog(SelectedUser.Id, Messages.Count)).ToList();
-                //todo сделать лучше биндинг
-                var messages = new List<Message>();
-                messages.AddRange(Messages);
-                messages.AddRange(nextMessages);
-                Messages = messages;
+                try
+                {
+                    var nextMessages = (await _messageService.GetDialog(SelectedUser.Id, Messages.Count)).OrderBy(m => m.Date).ToList();
+                    //todo сделать лучше биндинг
+                    var messages = new List<Message>();
+                    messages.AddRange(nextMessages);
+                    messages.AddRange(Messages);
+
+                    var vizibleCount = ((ScrollViewer) e.OriginalSource).ViewportHeight;
+
+                    var listView = ((ScrollViewer)e.Source).TemplatedParent as ListView;
+                    if (listView!=null)
+                    {
+                        var currentIndex = Messages.IndexOf((Message)listView.Items.CurrentItem);
+                        var current = Messages[currentIndex + (int)vizibleCount-1];
+                        Messages = messages;
+
+                        listView.ScrollIntoView(current);
+                    }
+
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
-            catch (Exception)
+          
+
+            if (ScrollToEnd)
             {
-                // ignored
+                ((ScrollViewer)e.OriginalSource).ScrollToBottom();
+                ScrollToEnd = false;
             }
         }
 
@@ -332,7 +359,8 @@ namespace CryptIt.ViewModel
 
         private async void AddMessages(Message message)
         {
-            if (SelectedUser == null)
+            if (SelectedUser == null ||
+                (message.Out && message.Body.StartsWith(_cryptTool._isCryptedFlag))) //не выводим свое отправленное зашифрованное сообщение - незачем
                 return;
 
             var decryptedMessage = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
@@ -377,12 +405,11 @@ namespace CryptIt.ViewModel
                 }
             }
             //todo переделать биндинг
-            var messages = new List<Message>
-            {
-                message
-            };
+            var messages = new List<Message>();
             messages.AddRange(Messages);
+            messages.Add(message);
             Messages = messages;
+            ScrollToEnd = true;
 
         }
 
@@ -435,10 +462,19 @@ namespace CryptIt.ViewModel
                     return;
                 if (!string.IsNullOrEmpty(Message.Body))
                 {
+                    var simpleMessage = new Message
+                    {
+                        Body = Message.Body,
+                        UserId = SelectedUser.Id,
+                        Out = true
+
+                    };
                     var cryptedMessage = _cryptTool.MakingEnvelope(Message.Body);
                     Message.Body = cryptedMessage;
                     await _messageService.SendMessage(SelectedUser.Id, Message);
                     Message = new Message();
+                    AddMessages(simpleMessage);
+
                 }
             }
             catch (WebException)
@@ -453,7 +489,10 @@ namespace CryptIt.ViewModel
 
         public bool IsSendButtonEnabled
         {
-            get { return SelectedUser.KeyExists && !IsMessageSending && !IsConnectionFailed; }
+            get
+            {
+                return SelectedUser!=null && SelectedUser.KeyExists && !IsMessageSending && !IsConnectionFailed;
+            }
         }
 
         public Message Message
@@ -525,6 +564,7 @@ namespace CryptIt.ViewModel
             {
                 using (var reader = new StreamReader(fileName))
                 {
+                    var keyFound = false;
                     string line;
                     while ((line = reader.ReadLine())!=null)
                     {
@@ -532,12 +572,12 @@ namespace CryptIt.ViewModel
                         int id;
                         if (int.TryParse(data[0], out id) && id == SelectedUser.Id && data.Length==2)
                         {                           
-                            //SelectedUser.Key = data[1].FromBase64();
-                            SelectedUser.KeyExists = true;
                             _cryptTool.SetRSAKey(data[1].FromBase64());
+                            keyFound = true;
                             break;
                         }
                     }
+                    SelectedUser.KeyExists = keyFound;
                 }
             }
         }
@@ -548,19 +588,21 @@ namespace CryptIt.ViewModel
             try
             {
                 SelectedUser = user;
-                var messages = (await _messageService.GetDialog(SelectedUser.Id)).ToList();
+                var messages = (await _messageService.GetDialog(SelectedUser.Id)).OrderBy(m => m.Date).ToList();
                 foreach (var message in messages.ToArray())
                 {
                     message.Body = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
                     TakeFileNamesFromBody(message);
-                    if (message.Attachments!=null && message.Attachments.Where(a => a.File == null).ToList().Count != 0)
+                    if (message.Attachments != null &&
+                        message.Attachments.Where(a => a.File == null).ToList().Count != 0)
                     {
                         message.HasUndefinedContent = true;
-                        message.Attachments = new ObservableCollection<Attachment>(message.Attachments.Where(a => a.File != null));
+                        message.Attachments =
+                            new ObservableCollection<Attachment>(message.Attachments.Where(a => a.File != null));
                     }
                 }
 
-                if (messages.Count > 0 && messages[0].UserId!=SelectedUser.Id)
+                if (messages.Count > 0 && messages[0].UserId != SelectedUser.Id)
                 {
                     var inMessage = messages.FirstOrDefault(m => !m.Out);
                     SelectedUser = inMessage != null ? inMessage.User : await _userService.GetUser(SelectedUser.Id);
@@ -579,6 +621,10 @@ namespace CryptIt.ViewModel
                 Messages = null;
                 ShowWebErrorMessage();
                 return;
+            }
+            finally
+            {
+                ScrollToEnd = true;
             }
             SelectedUser.NumberOfNewMessages = null;
             if (Messages.Count!=0 && !Messages[0].Out)
@@ -627,7 +673,9 @@ namespace CryptIt.ViewModel
                 key = data[1];
                 _cryptTool.SetRSAKey(key.FromBase64());
             }
-                        
+            OnPropertyChanged(nameof(IsSendButtonEnabled));
+
+
             using (var writer = new StreamWriter(_keysFileName, true))
             {
                 writer.WriteLine(SelectedUser.Id + " " +key);

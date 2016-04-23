@@ -39,7 +39,7 @@ namespace Model
                 {
                     return "Online";
                 }
-                return "Online_app";
+                return "Online_crypto";
             }
         }
 

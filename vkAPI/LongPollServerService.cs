@@ -118,8 +118,6 @@ namespace vkAPI
                         case 9:
                             UserBecameOnlineOrOfflineEvent?.Invoke(-1 * int.Parse(update[1].ToString()), false);
                             break;
-                        default:
-                            break;
                     }
                 }
             }

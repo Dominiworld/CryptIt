@@ -20,7 +20,7 @@ namespace CryptingTool
         private  CngKey senderKeySignature;
         private  byte[] senderPubKeyBlob;
 
-       private string _isCryptedFlag = "ъйьz";
+       public string _isCryptedFlag = "ъйьz";
 
         public static CryptTool Instance { get; } = new CryptTool();
 
@@ -352,7 +352,7 @@ namespace CryptingTool
                     }
                     return encryptedSymmetricKey;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //Console.WriteLine(ex.Message);
                     aes.Clear();

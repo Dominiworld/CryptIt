@@ -69,7 +69,7 @@ namespace CryptIt.ViewModel
                 {
                     System.IO.File.Delete(currentFile);
                 }
-                catch (Exception ex)
+                catch (Exception )
                 {
                 }
             }

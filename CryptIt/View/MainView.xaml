@@ -68,7 +68,7 @@
                          Width="323" Margin="0,30,0,0"/>
             </StackPanel>
 
-            <ListBox 
+            <ListBox
                 Grid.Row="1" ItemsSource="{Binding FoundFriends}" Background="#cee2f2" BorderBrush="#cee2f2" Foreground="#215680" Grid.ColumnSpan="5" Margin="0,0,38,0">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}">
@@ -120,6 +120,8 @@
                 <ListView.Resources>
                     <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
                 </ListView.Resources>
+
+                
                 <ListView.ItemTemplate >
                     <DataTemplate>
                         <StackPanel HorizontalAlignment="Left">
@@ -167,6 +169,9 @@
                     <local:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
                         <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
                     </local:RoutedEventTrigger>
+                    <!--<i:EventTrigger EventName="DataContextChanged">
+                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>-->
                 </i:Interaction.Triggers>
 
             </ListView>
@@ -190,7 +195,8 @@
                     <Button Content="Добавить ключ" Height="30" Width="Auto" Margin="5"
                             Command="{Binding SetFriendKeyCommand}" CommandParameter="{Binding SelectedUser.Id}"
                             Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}"/>
-                    <Button Content="Выбрать файл" Margin="5" Width="Auto" Height="30" Command="{Binding UploadFileCommand}"/>
+                    <Button Content="Выбрать файл" Margin="5" Width="Auto" Height="30" 
+                            IsEnabled="{Binding IsSendButtonEnabled}" Command="{Binding UploadFileCommand}"/>
                     <Button Content="Отправить" Command="{Binding SendMessageCommand}" Margin="5"
                          IsEnabled="{Binding IsSendButtonEnabled}"
                          Height="30"  Width="Auto"/>
