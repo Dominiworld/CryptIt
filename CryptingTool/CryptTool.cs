@@ -281,6 +281,10 @@ namespace CryptingTool
             string encryptedSymmetricKey = message.Substring(136, 344);
             byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
             string symmetricKey = DecryptString(encryptedSymmetricKey);
+            if(symmetricKey==encryptedSymmetricKey)
+            {
+               return message;
+            }
 
             if (VerifySignature(receivedData, receivedSignature, receivedPubKey))
             {
@@ -369,6 +373,11 @@ namespace CryptingTool
                 //var encryptedSymmetricKey = extension.Substring(0,344);
                // extension = extension.Substring(344);
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
+                 if(symmetricKey==encryptedSymmetricKey)
+                 {
+                     //Console.WriteLine("Файл не может быть расшифрован данной парой ключей");
+                     return;
+                 }
                 //string res = fi.Directory + @"\res" + extension;
                 RijndaelManaged aes = new RijndaelManaged();
                 try
@@ -520,6 +529,10 @@ namespace CryptingTool
             string encryptedSymmetricKey = encryptedMessage.Substring(0, 344);
             string message = encryptedMessage.Substring(344);
             string symmetricKey = DecryptString(encryptedSymmetricKey);
+            if(symmetricKey==encryptedSymmetricKey)
+            {
+                return encryptedMessage;
+            }
             string result = Decrypt(message, symmetricKey);
             image.Dispose();
             return result;
