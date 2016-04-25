@@ -114,9 +114,6 @@
     <Compile Include="View\ConnectionFailed.xaml.cs">
       <DependentUpon>ConnectionFailed.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\NoDialogSelected.xaml.cs">
-      <DependentUpon>NoDialogSelected.xaml</DependentUpon>
-    </Compile>
     <Page Include="View\BrowserView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -140,10 +137,6 @@
     <Page Include="View\ConnectionFailed.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\NoDialogSelected.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

@@ -9,7 +9,7 @@
 
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:DownloadViewModel}"
-        Title="DownloadView" Height="300" Width="600" ResizeMode="CanResizeWithGrip">
+        Title="Загрузка" Height="300" Width="600" ResizeMode="CanResizeWithGrip">
     <Window.Resources>
         <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
     </Window.Resources>
@@ -21,17 +21,15 @@
                     <GridViewColumn DisplayMemberBinding="{Binding File.FileName}" Header="Имя файла" Width="200">
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding ProgreccPercentString}" Header="Загружено" Width="50"/>
-                        <GridViewColumn DisplayMemberBinding="{Binding IsNotCompleted}" Header="Статус"/>
                     <GridViewColumn Width="200">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="Открыть папку" 
+                                <Button Content="Открыть папку" 
                                             Command="{Binding DataContext.OpenFolderCommand, 
                                             RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
                                             CommandParameter="{Binding}"
                                             IsEnabled="{Binding Path=IsNotCompleted, Converter={StaticResource InvertBooleanConverter}}" Width="100"/>
-                                    
-                                </DataTemplate>
+                            </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                     </GridView.Columns>

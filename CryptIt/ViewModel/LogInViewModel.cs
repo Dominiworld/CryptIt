@@ -22,7 +22,7 @@ namespace CryptIt.ViewModel
         private string _authorizeUrl;
         private MessageService _messageService;
         private UserService _userService;
-
+        private bool _isBrowserLoading;
 
 
         public LogInViewModel()
@@ -44,6 +44,16 @@ namespace CryptIt.ViewModel
             window.WebBrowser.Navigate(new Uri(AuthorizeUrl));
             window.Show();
             OnClosingRequest();
+        }
+
+        public bool IsBrowserLoading
+        {
+            get { return _isBrowserLoading; }
+            set
+            {
+                _isBrowserLoading = value;
+                OnPropertyChanged();
+            }
         }
 
         public DelegateCommand AuthorizeCommand { get; set; }

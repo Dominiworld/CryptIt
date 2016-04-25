@@ -1,8 +1,18 @@
 ﻿<Window x:Class="CryptIt.View.BrowserView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Browser" Height="520" Width="700" ResizeMode="NoResize">
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
+         xmlns:converters="clr-namespace:CryptIt.Converters"
+        Title="Подтверждение данных" Height="520" Width="700" ResizeMode="NoResize">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Grid>
-        <WebBrowser x:Name="WebBrowser" Navigated="WebBrowser_OnNavigated"/>
+        <WebBrowser x:Name="WebBrowser" Visibility="{Binding IsBrowserLoading, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
+                    Navigating="WebBrowser_OnNavigating"  Navigated="WebBrowser_OnNavigated"/>
+        <Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif"
+               Visibility="{Binding IsBrowserLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </Grid>
+    
 </Window>
