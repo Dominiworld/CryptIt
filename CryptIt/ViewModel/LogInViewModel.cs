@@ -20,17 +20,12 @@ namespace CryptIt.ViewModel
 
    
         private string _authorizeUrl;
-        private MessageService _messageService;
-        private UserService _userService;
+
         private bool _isBrowserLoading;
 
 
         public LogInViewModel()
         {
-            _messageService = new MessageService();
-            _userService = new UserService();
-            
-            
             AuthorizeUrl = AuthorizeService.Instance.GetAuthorizeUrl();
             AuthorizeCommand = new DelegateCommand(Authorize);
         }
@@ -55,6 +50,8 @@ namespace CryptIt.ViewModel
                 OnPropertyChanged();
             }
         }
+
+
 
         public DelegateCommand AuthorizeCommand { get; set; }
 

@@ -97,7 +97,7 @@ namespace vkAPI
             {
                 return new List<Photo>();
             }
-            var photo = JsonConvert.DeserializeObject<List<Photo>>(objs["response"].ToString());
+            var photo = JsonConvert.DeserializeObject<List<Photo>>(objs["response"].ToString());            
             return photo.ToList();
         }
     }

@@ -36,6 +36,7 @@ namespace CryptIt.View
         private void WebBrowser_OnNavigated(object sender, NavigationEventArgs e)
         {
             _model.IsBrowserLoading = false;
+            
             var urlParams = HttpUtility.ParseQueryString(e.Uri.Fragment.Substring(1));
             AuthorizeService.Instance.AccessToken = urlParams.Get("access_token");
             AuthorizeService.Instance.CurrentUserId = int.Parse(urlParams.Get("user_id"));
@@ -50,5 +51,6 @@ namespace CryptIt.View
         {
             _model.IsBrowserLoading = true;
         }
+
     }
 }

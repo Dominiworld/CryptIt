@@ -5,6 +5,7 @@
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:local="clr-namespace:CryptIt"
+         xmlns:s="clr-namespace:System;assembly=mscorlib"
         xmlns:vm="clr-namespace:CryptIt.ViewModel"
         xmlns:cmd ="http://www.galasoft.ch/mvvmlight" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
@@ -193,8 +194,19 @@
                                Visibility="{Binding IsConnectionFailed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="Добавить ключ" Height="30" Width="Auto" Margin="5"
-                            Command="{Binding SetFriendKeyCommand}" CommandParameter="{Binding SelectedUser.Id}"
-                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}"/>
+                            Command="{Binding SetFriendKeyCommand}" 
+                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}">
+                        <Button.CommandParameter>
+                            <s:Boolean>False</s:Boolean>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Content="Изменить ключ" Height="30" Width="Auto" Margin="5"
+                            Command="{Binding SetFriendKeyCommand}"
+                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Button.CommandParameter>
+                            <s:Boolean>True</s:Boolean>
+                        </Button.CommandParameter>
+                    </Button>
                     <Button Content="Выбрать файл" Margin="5" Width="Auto" Height="30" 
                             IsEnabled="{Binding IsSendButtonEnabled}" Command="{Binding UploadFileCommand}"/>
                     <Button Content="Отправить" Command="{Binding SendMessageCommand}" Margin="5"

@@ -10,9 +10,10 @@
     </Window.Resources>
     <Grid>
         <WebBrowser x:Name="WebBrowser" Visibility="{Binding IsBrowserLoading, Converter={StaticResource InvertBooleanToVisibilityConverter}}"
-                    Navigating="WebBrowser_OnNavigating"  Navigated="WebBrowser_OnNavigated"/>
+                     Navigating="WebBrowser_OnNavigating"  Navigated="WebBrowser_OnNavigated"/>
         <Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif"
                Visibility="{Binding IsBrowserLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      
     </Grid>
     
 </Window>

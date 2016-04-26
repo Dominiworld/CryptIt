@@ -81,7 +81,7 @@ namespace vkAPI
 
                             var attachmentIds = attachString
                                 .Where(s => !s.Contains("type")).ToList()
-                                .Select(e => e.Split(':').Last()).ToList();
+                                .Select(e => e.Split(':').Last().Trim(' ')).ToList();
                              var types = attachString
                                 .Where(s => s.Contains("type")).ToList()
                                 .Select(e => e.Split(':').Last().Trim(' ')).ToList();
