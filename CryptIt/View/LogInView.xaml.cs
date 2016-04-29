@@ -1,10 +1,5 @@
-﻿using System;
-using System.Web;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Navigation;
+﻿using System.Windows;
 using CryptIt.ViewModel;
-using vkAPI;
 
 namespace CryptIt.View
 {

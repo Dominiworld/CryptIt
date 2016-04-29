@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using Model;
 using Newtonsoft.Json;
@@ -91,7 +87,14 @@ namespace vkAPI
             await GetUrl(url);
         }
 
-       
+        public async Task<Message> GetMessage(int id)
+        {
+            var token = AuthorizeService.Instance.AccessToken;
+            var url =
+               $"https://api.vk.com/method/messages.getById?v=5.45&access_token={token}&message_ids={id}";
+            var obj = await GetUrl(url);
+            return JsonConvert.DeserializeObject<Message>(obj["response"]["items"][0].ToString());
+        }
 
     }
 }

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using Model;
 using Model.Files;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,11 +13,6 @@ namespace vkAPI
     public class FileService:BaseService
     {
         private string _token = AuthorizeService.Instance.AccessToken;
-
-
-        //public UploadProgressChangedEventHandler UploadProgressChangedEvent;
-        //public UploadFileCompletedEventHandler UploadFileCompletedEvent;
-
 
         /// <summary>
         ///  Call GetUploadUrl, then webClient.UploadFileTaskAsync and call  UploadFile
@@ -80,7 +70,13 @@ namespace vkAPI
                 return new List<Document>();
             }
             var docs = JsonConvert.DeserializeObject<List<Document>>(objs["response"].ToString());
-            return docs.ToList();
+            if (docs.Count == 0)
+            {
+                //для тех докуметов, которые не получены по причине недостатка прав - надо для подгрузки этого сообщения другим методом
+                docs.Add(new Document {Id = -1});
+            }
+
+            return docs;
         }
 
         public async Task<List<Photo>> GetPhotos(List<string> fullIds)
