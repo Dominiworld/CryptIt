@@ -17,6 +17,8 @@ namespace CryptingTool
         private  byte[] senderPubKeyBlob;
 
        public string _isCryptedFlag = "ъйьz";
+       private string _desktopFlag = "h2m2";
+       private string _mobileFlag = "h1m1";
 
         public static CryptTool Instance { get; } = new CryptTool();
 
@@ -252,6 +254,7 @@ namespace CryptingTool
 
         #region Вспомогательные функции распаковки и упаковки сообщений
 
+
         /// <summary>
         /// Расшифровка сообщения
         /// </summary>
@@ -269,28 +272,61 @@ namespace CryptingTool
             if (des != _isCryptedFlag)
                 return message;
 
-            message = message.Substring(_isCryptedFlag.Length);
-            message = message.FromBase64();
+            string des2 = message.Substring(3, _desktopFlag.Length);
 
-            byte[] receivedSignature = Encoding.Default.GetBytes(message.Substring(0, 64));
-            byte[] receivedPubKey = Encoding.Default.GetBytes(message.Substring(64, 72));
-            string encryptedSymmetricKey = message.Substring(136, 344);
-            byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
-            string symmetricKey = DecryptString(encryptedSymmetricKey);
-            if(symmetricKey==encryptedSymmetricKey)
+            if (des == _mobileFlag)
             {
-               return message;
-            }
-
-            if (VerifySignature(receivedData, receivedSignature, receivedPubKey))
-            {
-                // Console.WriteLine("Подпись отправителя была успешно проверена");
-                // Console.WriteLine("Данные получены. Содержимое: " + Decrypt(receivedData, symmetricKey));
+                message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
+                string encryptedSymmetricKey = message.Substring(136, 344);
+                byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
+                string symmetricKey = DecryptString(encryptedSymmetricKey);
+                if (symmetricKey == encryptedSymmetricKey)
+                {
+                    return message;
+                }
                 return Decrypt(receivedData, symmetricKey);
             }
 
+            if (des2 == _desktopFlag)
+            {
+                message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
+                byte[] receivedSignature = Encoding.Default.GetBytes(message.Substring(0, 64));
+                byte[] receivedPubKey = Encoding.Default.GetBytes(message.Substring(64, 72));
+                string encryptedSymmetricKey = message.Substring(136, 344);
+                byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
+                string symmetricKey = DecryptString(encryptedSymmetricKey);
+                if (symmetricKey == encryptedSymmetricKey)
+                {
+                    return message;
+                }
+
+                if (VerifySignature(receivedData, receivedSignature, receivedPubKey))
+                {
+                    return Decrypt(receivedData, symmetricKey);
+                }
+            }
             return message;
-            //else Console.WriteLine("Не шифрованое сообщение:" + message);
+
+            //message = message.Substring(_isCryptedFlag.Length);
+            //message = message.FromBase64();
+
+            //byte[] receivedSignature = Encoding.Default.GetBytes(message.Substring(0, 64));
+            //byte[] receivedPubKey = Encoding.Default.GetBytes(message.Substring(64, 72));
+            //string encryptedSymmetricKey = message.Substring(136, 344);
+            //byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
+            //string symmetricKey = DecryptString(encryptedSymmetricKey);
+            //if(symmetricKey==encryptedSymmetricKey)
+            //{
+            //   return message;
+            //}
+
+            //if (VerifySignature(receivedData, receivedSignature, receivedPubKey))
+            //{
+
+            //    return Decrypt(receivedData, symmetricKey);
+            //}
+
+            //return message;
         }
         /// <summary>
         /// Шифровка сообщения
@@ -312,8 +348,11 @@ namespace CryptingTool
             byte[] senderSignature = CreateSignature(senderData, senderKeySignature);
 
             string envelope =  Encoding.Default.GetString(senderSignature) +
-                             Encoding.Default.GetString(senderPubKeyBlob)+ encryptedSymmetricKey + Encoding.Default.GetString(senderData);
-            return _isCryptedFlag + envelope.ToBase64();
+                             Encoding.Default.GetString(senderPubKeyBlob)+ 
+                             encryptedSymmetricKey + 
+                             Encoding.Default.GetString(senderData);
+
+            return _isCryptedFlag + _desktopFlag + envelope.ToBase64();
         }
         /// <summary>
         /// Возвращает ключ для дешифровки, который надо передать в сообщение
