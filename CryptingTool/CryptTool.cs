@@ -22,7 +22,7 @@ namespace CryptingTool
 
         public static CryptTool Instance { get; } = new CryptTool();
 
-       protected CryptTool()
+        protected CryptTool()
        {
            keyRSARemote = null;
            keyRSAPublic = null;
@@ -262,7 +262,8 @@ namespace CryptingTool
         /// <returns></returns>
         public string SplitAndUnpackReceivedMessage(string message)
         {
-
+            if (keyRSARemote == null)
+                return message;
             if (string.IsNullOrEmpty(message) || message.Length < _isCryptedFlag.Length)
             {
                 return message;
@@ -272,13 +273,14 @@ namespace CryptingTool
             if (des != _isCryptedFlag)
                 return message;
 
-            string des2 = message.Substring(3, _desktopFlag.Length);
+            string des2 = message.Substring(_isCryptedFlag.Length, _desktopFlag.Length);
 
-            if (des == _mobileFlag)
+            if (des2 == _mobileFlag)
             {
                 message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
-                string encryptedSymmetricKey = message.Substring(136, 344);
-                byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
+                var len = message.Length;
+                string encryptedSymmetricKey = message.Substring(0, 344);
+                byte[] receivedData = Encoding.Default.GetBytes(message.Substring(344));
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
                 if (symmetricKey == encryptedSymmetricKey)
                 {

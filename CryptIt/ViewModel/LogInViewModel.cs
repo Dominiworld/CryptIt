@@ -8,11 +8,8 @@ namespace CryptIt.ViewModel
     public class LogInViewModel:ViewModelBase
     {
 
-   
         private string _authorizeUrl;
-
         private bool _isBrowserLoading;
-
 
         public LogInViewModel()
         {

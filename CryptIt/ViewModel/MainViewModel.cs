@@ -217,7 +217,7 @@ namespace CryptIt.ViewModel
                 var line = reader.ReadToEnd();
                 if (line != string.Empty)
                 {
-                    _cryptTool.keyRSAPrivate = Encoding.Default.GetBytes(line.FromBase64());
+                    _cryptTool.keyRSAPrivate = Convert.FromBase64String(line);
                     reader = new StreamReader(path + "\\" + myPublicKeyFileName);
                     line = reader.ReadToEnd();
                     var data = line.Split(' ');
@@ -226,7 +226,7 @@ namespace CryptIt.ViewModel
                         int id;
                         if (int.TryParse(data[0], out id) && id == myId)
                         {
-                            _cryptTool.keyRSAPublic = Encoding.Default.GetBytes(data[1].FromBase64());
+                            _cryptTool.keyRSAPublic = Convert.FromBase64String(data[1]);
                             reader.Dispose();
                             return false;
                         }
@@ -237,10 +237,10 @@ namespace CryptIt.ViewModel
 
             _cryptTool.CreateRSAKey();
             var writer = new StreamWriter(path + "\\"+myPublicKeyFileName);
-            writer.Write(myId + " " + Encoding.Default.GetString(_cryptTool.keyRSAPublic).ToBase64());
+            writer.Write(myId + " " +Convert.ToBase64String(_cryptTool.keyRSAPublic));
             writer.Close();
             writer = new StreamWriter(path + "\\" + myPrivateKeyFileName);
-            writer.Write(Encoding.Default.GetString(_cryptTool.keyRSAPrivate).ToBase64());
+            writer.Write(Convert.ToBase64String(_cryptTool.keyRSAPrivate));
             writer.Close();
             return true;
         }
@@ -269,7 +269,7 @@ namespace CryptIt.ViewModel
                 config.Save(ConfigurationSaveMode.Modified);
             }
            
-            if (SetKeys("public_key.txt", "private_key.txt", settings[_keysFolderNameInAppSetting].Value))
+            if (SetKeys("my_public.txt", "my_private.txt", settings[_keysFolderNameInAppSetting].Value))
             {
                 MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ (public_key.txt) собеседникам.");
             }
@@ -295,7 +295,7 @@ namespace CryptIt.ViewModel
                         int id;
                         if (int.TryParse(data[0], out id) && id == SelectedUser.Id && data.Length == 2)
                         {
-                            _cryptTool.SetRSAKey(data[1].FromBase64());
+                            _cryptTool.keyRSARemote = Convert.FromBase64String(data[1]);
                             keyFound = true;
                             break;
                         }
@@ -330,7 +330,7 @@ namespace CryptIt.ViewModel
                 }
                 SelectedUser.KeyExists = true;
                 key = data[1];
-                _cryptTool.SetRSAKey(key.FromBase64());
+                _cryptTool.keyRSARemote = Convert.FromBase64String(key);
             }
             OnPropertyChanged(nameof(IsSendButtonEnabled));
 
@@ -638,6 +638,10 @@ namespace CryptIt.ViewModel
                 try
                 {
                     var nextMessages = (await _messageService.GetDialog(SelectedUser.Id, Messages.Count)).OrderBy(m => m.Date).ToList();
+                    foreach (var message in nextMessages.ToArray())
+                    {
+                        message.Body = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
+                    }
                     //todo сделать лучше биндинг
                     var messages = new List<Message>();
                     messages.AddRange(nextMessages);
@@ -654,9 +658,8 @@ namespace CryptIt.ViewModel
 
                         listView.ScrollIntoView(current);
                     }
-
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // ignored
                 }
