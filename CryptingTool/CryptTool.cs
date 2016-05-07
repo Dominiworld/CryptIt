@@ -100,7 +100,7 @@ namespace CryptingTool
                                        encryptedBytes, true));
                }
             }
-             catch (Exception)
+             catch (Exception ex)
             {
                 return inputString;
             }
@@ -275,12 +275,19 @@ namespace CryptingTool
 
             string des2 = message.Substring(_isCryptedFlag.Length, _desktopFlag.Length);
 
+            var enc = Encoding.GetEncoding(1252);
             if (des2 == _mobileFlag)
             {
+                //message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
+                //var len = message.Length;
+                //string encryptedSymmetricKey = message.Substring(0, 344);
+                //byte[] receivedData = Encoding.Default.GetBytes(message.Substring(344));
+                //string symmetricKey = DecryptString(encryptedSymmetricKey);
+
                 message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
                 var len = message.Length;
                 string encryptedSymmetricKey = message.Substring(0, 344);
-                byte[] receivedData = Encoding.Default.GetBytes(message.Substring(344));
+                byte[] receivedData = enc.GetBytes(message.Substring(344));
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
                 if (symmetricKey == encryptedSymmetricKey)
                 {
@@ -292,10 +299,10 @@ namespace CryptingTool
             if (des2 == _desktopFlag)
             {
                 message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
-                byte[] receivedSignature = Encoding.Default.GetBytes(message.Substring(0, 64));
-                byte[] receivedPubKey = Encoding.Default.GetBytes(message.Substring(64, 72));
+                byte[] receivedSignature = enc.GetBytes(message.Substring(0, 64));
+                byte[] receivedPubKey = enc.GetBytes(message.Substring(64, 72));
                 string encryptedSymmetricKey = message.Substring(136, 344);
-                byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
+                byte[] receivedData = enc.GetBytes(message.Substring(480));
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
                 if (symmetricKey == encryptedSymmetricKey)
                 {
@@ -338,6 +345,7 @@ namespace CryptingTool
         /// </returns>
         public string MakingEnvelope(string message)         //TODO Добавить в функцию строковую переменную ключа для шифрования данных
         {
+            var enc = Encoding.GetEncoding(1252);
             CreateKeys();
 
             string symmetricKey = GetRandomString(8);
@@ -349,10 +357,10 @@ namespace CryptingTool
 
             byte[] senderSignature = CreateSignature(senderData, senderKeySignature);
 
-            string envelope =  Encoding.Default.GetString(senderSignature) +
-                             Encoding.Default.GetString(senderPubKeyBlob)+ 
+            string envelope =  enc.GetString(senderSignature) +
+                             enc.GetString(senderPubKeyBlob)+ 
                              encryptedSymmetricKey + 
-                             Encoding.Default.GetString(senderData);
+                             enc.GetString(senderData);
 
             return _isCryptedFlag + _desktopFlag + envelope.ToBase64();
         }

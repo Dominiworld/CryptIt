@@ -57,7 +57,7 @@ namespace CryptIt.ViewModel
         #endregion private variables
 
         public MainViewModel()
-        {          
+        {
             _longPollServer.GotNewMessageEvent += AddMessages;
             _longPollServer.MessageStateChangedToReadEvent += ChangeMessagesStateToRead;
             _longPollServer.UserBecameOnlineOrOfflineEvent += ChangeUserOnlineStatus;
@@ -789,6 +789,15 @@ namespace CryptIt.ViewModel
 
         private async void GetStartInfo()
         {
+            var enc = Encoding.GetEncoding(1252);
+            Console.WriteLine(enc.BodyName);
+            var en = Encoding.GetEncodings();
+            foreach (var encodingInfo in en)
+            {
+                Console.WriteLine(encodingInfo.DisplayName + " " + encodingInfo.Name);
+            }
+            Console.WriteLine(Encoding.GetEncodings());
+
             try
             {
                 Friends = (await _userService.GetFriends(AuthorizeService.Instance.CurrentUserId)).ToList();
