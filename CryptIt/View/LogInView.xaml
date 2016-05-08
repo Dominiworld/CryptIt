@@ -1,40 +1,25 @@
 ﻿<Window x:Class="CryptIt.View.LogInView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Авторизация"  MinHeight="600" MinWidth="800" Height="600" Width="800">
+        Title="Авторизация" Height="500" Width="600" ResizeMode="NoResize">
 
     <Grid Background="#2e72a3">
 
-        <!-- Устанавливаем 5 строки -->
-        <Grid.RowDefinitions>
-            <RowDefinition Height="70"></RowDefinition>
-            <RowDefinition Height="2"></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition Height="2"></RowDefinition>
-            <RowDefinition Height="30"></RowDefinition>
-        </Grid.RowDefinitions>
-        <!-- Устанавливаем 1 столбца -->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition Width="300"></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
-        </Grid.ColumnDefinitions>
+        <Border Background="#1f5071" Height="70" Margin="0,3,0,399"/>
+        <Border Background="#215680" Height="70" Margin="0,0,0,402"/>
+
+        <Border Background="#286290" Height="30" Margin="0,439,0,3"/>
+        <Border Background="#215680" Height="30" Margin="0,442,0,0"/>
+
+        <StackPanel  VerticalAlignment="Stretch" Margin="193,16,192,370" Height="86" >
+            <TextBlock FontFamily="Helvetica" Foreground="#c5d0fe" Text="ВКОНТАКТЕ"  Height="45" FontSize="30" Margin="19,0,0,0" RenderTransformOrigin="0.381,2.548" HorizontalAlignment="Left" Width="169"/>
+        </StackPanel>
+
+        <TextBlock FontFamily="Helvetica" FontStyle="Italic" Foreground="#b0e5b1" Text="CryptIt" FontSize="18" Margin="376,33,134,402" RenderTransformOrigin="0.429,0.976"/>
+        <TextBlock FontFamily="Helvetica" Foreground="#c5d0fe" Text="IdeaFix ©2016" FontSize="15" Margin="238,443,224,0" RenderTransformOrigin="0.429,0.976"/>
 
 
-        <Border Grid.Row="0" Grid.ColumnSpan="3" Background="#215680" HorizontalAlignment="Stretch"/>
-        <Border Grid.Row="1" Grid.ColumnSpan="3" Background="#1f5071" HorizontalAlignment="Stretch"/>
+        <Button Content="ВОЙТИ" Height="Auto" Command="{Binding AuthorizeCommand}" Margin="201,203,200,213" Width="Auto"/>
 
-        <Border Grid.Row="3" Grid.ColumnSpan="3" Background="#286290" HorizontalAlignment="Stretch"/>
-        <Border Grid.Row="4" Grid.ColumnSpan="3" Background="#215680" HorizontalAlignment="Stretch"/>
-
-
-        <TextBlock Grid.Row="0" Grid.Column="1" FontFamily="Helvetica" Foreground="#c5d0fe" Text="ВКОНТАКТЕ"   Height="45" FontSize="30" RenderTransformOrigin="0.381,2.548" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-
-        <TextBlock Grid.Row="0" Grid.Column="1" FontFamily="Helvetica" FontStyle="Italic" Foreground="#b0e5b1" Text="CryptIt" FontSize="18" RenderTransformOrigin="0.429,0.976"  Margin="225,44,0,0"/>
-
-        <Button Grid.Row="2" Grid.Column="1" Content="ВОЙТИ" Height="50" Command="{Binding AuthorizeCommand}"  Width="200"/>
-
-        <TextBlock Grid.Row="4" Grid.Column="1" FontFamily="Helvetica" Foreground="#c5d0fe" Text="IdeaFix ©2016" FontSize="15"  HorizontalAlignment="Center"  Margin="0,8,0,0"  Height="auto" RenderTransformOrigin="0.429,0.976"/> 
-        
     </Grid>
 </Window>
