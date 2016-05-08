@@ -10,7 +10,7 @@
         xmlns:cmd ="http://www.galasoft.ch/mvvmlight" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:MainViewModel}"
-        Title="CryptIt" Height="600" Width="800">
+        Title="CryptIt" MinHeight="600" MinWidth="800" Height="600" Width="800">
     <!--Кароль величин-->
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
@@ -24,217 +24,259 @@
         <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
 
     </Window.Resources>
-
     <Grid Background="#2e72a3">
+
+        <!-- Устанавливаем 5 строки -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"></RowDefinition>
+            <RowDefinition Height="2"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="2"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+        <!-- Устанавливаем 1 столбца -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="300"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Border Background="#1f5071" Height="70" Margin="0,0,0,496" Grid.ColumnSpan="2"/>
-        <Border Background="#215680" Height="70" Margin="0,0,0,500" Grid.ColumnSpan="2"/>
+        <!-- header!-->
+        <Border Grid.Row="0" Grid.ColumnSpan="3" Background="#215680" HorizontalAlignment="Stretch"/>
+        <Border Grid.Row="1" Grid.ColumnSpan="3" Background="#1f5071" HorizontalAlignment="Stretch"/>
 
-        <Border Background="#286290" Height="30" Margin="0,537,0,0" Grid.ColumnSpan="2"/>
-        <Border Background="#215680" Height="30" Margin="0,541,0,1" Grid.ColumnSpan="2"/>
+        <Border Grid.Row="3" Grid.ColumnSpan="3" Background="#286290" HorizontalAlignment="Stretch"/>
+        <Border Grid.Row="4" Grid.ColumnSpan="3" Background="#215680" HorizontalAlignment="Stretch"/>
 
-        <StackPanel  VerticalAlignment="Stretch" Margin="294,14,295,472" Height="86" Grid.ColumnSpan="2" >
-            <TextBlock FontFamily="Helvetica" Foreground="#c5d0fe" Text="ВКОНТАКТЕ"  Height="45" FontSize="30" Margin="19,0,0,0" RenderTransformOrigin="0.381,2.548" HorizontalAlignment="Left" Width="169"/>
-        </StackPanel>
 
-        <TextBlock FontFamily="Helvetica" FontStyle="Italic" Foreground="#b0e5b1" Text="CryptIt" FontSize="18" Margin="79,33,258,502" RenderTransformOrigin="0.429,0.976" Grid.Column="1"/>
-        <TextBlock FontFamily="Helvetica" Foreground="#c5d0fe" Text="IdeaFix ©2016" FontSize="15" Margin="347,543,308,-11" RenderTransformOrigin="0.429,0.976" Grid.ColumnSpan="2"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" FontFamily="Helvetica" Foreground="#c5d0fe" Text="ВКОНТАКТЕ"   Height="45" FontSize="30" RenderTransformOrigin="0.381,2.548" HorizontalAlignment="Center" Margin="0,10,0,0"/>
 
-        <Border Background="#a2b6c6" Margin="0,67,69,379" HorizontalAlignment="Right" Width="328"/>
-        <TextBlock FontFamily="Helvetica" Foreground="#fff" Text="Друзья" FontSize="15" Margin="128,78,139,365" RenderTransformOrigin="0.429,0.976"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" FontFamily="Helvetica" FontStyle="Italic" Foreground="#b0e5b1" Text="CryptIt" FontSize="18" RenderTransformOrigin="0.429,0.976"  Margin="225,44,0,0"/>
+        <!-- /header!-->
 
-        <Grid Margin="0,74,0,34">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="10*"/>
-                <ColumnDefinition Width="11*"/>
-                <ColumnDefinition Width="8*"/>
-                <ColumnDefinition Width="238*"/>
-                <ColumnDefinition Width="100*"/>
-                <ColumnDefinition Width="30*"/>
-            </Grid.ColumnDefinitions>
-            <!-- первая колонна левая еперный аватар-->
-
+        <!-- body!-->
+        <!-- сетка общая!-->
+        <Grid Grid.Row="2" Grid.ColumnSpan="3">
+            <!-- Устанавливаем 1 строки -->
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" ></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
+            <!-- Устанавливаем 2 столбца -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="350" Width="*" MaxWidth="350"></ColumnDefinition>
+                <ColumnDefinition Width="2*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Добавляем левый блок-->
+            <Grid Grid.Row="0" Grid.Column="0">
+                <!-- Устанавливаем 2 строки -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <!-- Устанавливаем 1 столбца -->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Grid.ColumnSpan="6">
+                <Border Grid.Row="0" Grid.Column="0" Background="#a2b6c6"   HorizontalAlignment="Stretch" />
+                <TextBlock Grid.Row="0" Grid.Column="0" FontFamily="Helvetica" HorizontalAlignment="Center" Margin="0,2,0,0" Foreground="#fff" Text="Друзья" FontSize="20" RenderTransformOrigin="0.429,0.976"/>
 
-                <TextBox Text ="{Binding SearchString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Width="323" Margin="0,30,0,0"/>
-            </StackPanel>
+                <!-- Добавили поиск-->
+                <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical"  >
+                    <TextBox Text ="{Binding SearchString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Padding="5"/>
+                </StackPanel>
 
-            <ListBox
-                Grid.Row="1" ItemsSource="{Binding FoundFriends}" Background="#cee2f2" BorderBrush="#cee2f2" Foreground="#215680" Grid.ColumnSpan="5" Margin="0,0,38,0">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListBoxItem}">
-                        <Setter Property="Focusable" Value="False"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="Lavender"></Setter>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Height="50px">
-                            <StackPanel.InputBindings>
-                                <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.OpenDialogCommand , 
+
+                <ListBox
+                Grid.Row="2" ItemsSource="{Binding FoundFriends}" Background="#cee2f2" BorderBrush="#cee2f2" Foreground="#215680" Grid.Column="0"  Padding="10">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="Lavender"></Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Height="50px" Margin="0,5,0,0" HorizontalAlignment="Stretch" >
+                                <StackPanel.InputBindings>
+                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.OpenDialogCommand , 
                                     RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                               CommandParameter="{Binding}"/>
+
+                                </StackPanel.InputBindings>
                                 
-                            </StackPanel.InputBindings>
-                            <Image Source="{Binding PhotoUrl}" Width="50px"/>
-                            <TextBlock Text="{Binding FullName}" Width="150px"/>
-                            <TextBlock Text="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Width="50px"/>
-                            <TextBlock Text="{Binding NumberOfNewMessages, UpdateSourceTrigger=PropertyChanged}" Width="20px"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                                <Image Source="{Binding PhotoUrl}" Width="50px" Margin="2,2,2,2"/>
+                                <TextBlock Text="{Binding FullName}" Width="150px" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Width="50px" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding NumberOfNewMessages, UpdateSourceTrigger=PropertyChanged}" Width="20px"/>
+                                <TextBlock  Margin="-290,0,-25,0" VerticalAlignment="Bottom" Background="#9bb5ca" Height="1" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                            
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
-        </Grid>
 
-        <Grid Grid.Column="1" Margin="0,74,0,34" 
-              Visibility="{Binding SelectedUser, Converter={StaticResource IsUserSelectedToVisibilityConverter}}">
-        <!--<Grid Grid.Column="1" Margin="0,74,0,34" >-->
-            <!-- вторая колонна правая еперный аватар-->
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="15*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="4*"></RowDefinition>
-                <RowDefinition Height="4*"></RowDefinition>
-            </Grid.RowDefinitions>
+            </Grid>
+            <!-- / левый блок-->
 
-            <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}" Padding="10,2,0,10" Background="#184568" Foreground="#e2eaf0" Margin="-67,-6,0,2" ></TextBlock>
-            <ListView Height="Auto" 
+            <!-- Добавляем правый блок-->
+            <Grid Grid.Row="0" Grid.Column="1" Visibility="{Binding SelectedUser, Converter={StaticResource IsUserSelectedToVisibilityConverter}}">
+                <!-- Устанавливаем 4 строки -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition MinHeight="280" Height="*"></RowDefinition>
+                    <RowDefinition MinHeight="80" MaxHeight="160"></RowDefinition>
+                    <RowDefinition Height="80"></RowDefinition>
+
+                </Grid.RowDefinitions>
+                <!-- Устанавливаем 1 столбца -->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}" Padding="20,10,10,10" Margin="5,2,2,2" Background="#184568" Foreground="#e2eaf0" VerticalAlignment="Center"></TextBlock>
+
+
+
+                <ListView Height="Auto" Margin="5,2,2,0"
                       Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource  InvertBooleanToVisibilityConverter}}"
-                Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}" Margin="-67,0,0,0"  >
+                Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}"   >
 
-                <ListView.Resources>
-                    <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
-                </ListView.Resources>
+                    <ListView.Resources>
+                        <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
+                    </ListView.Resources>
 
-                
-                <ListView.ItemTemplate >
-                    <DataTemplate>
-                        <StackPanel HorizontalAlignment="Left">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Background" Value="{Binding IsNotRead, Converter={StaticResource UnreadToColorConverter}}"></Setter>
-                                </Style>
-                            </StackPanel.Style>
-                            <Image HorizontalAlignment="Left" Source="{Binding User.PhotoUrl}" Width="30" Margin="10,5,0,0" MaxWidth="30" />
-                            <TextBlock Text="{Binding User.FullName}" Margin="50,-30,0,0" FontStyle="Normal" Foreground="#215680"/>
-                            <TextBlock Text="{Binding Date}" Margin="50,-15,10,0" Foreground="#8c8e8f" FontSize="10"/>
-                            <TextBlock Text="{Binding Body}"
+
+                    <ListView.ItemTemplate >
+                        <DataTemplate>
+                            <StackPanel HorizontalAlignment="Stretch" MinWidth="400">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Background" Value="{Binding IsNotRead, Converter={StaticResource UnreadToColorConverter}}"></Setter>
+                                    </Style>
+                                </StackPanel.Style>
+                                <Image HorizontalAlignment="Left" Source="{Binding User.PhotoUrl}" Width="30" Margin="10,5,0,0" MaxWidth="30" />
+                                <TextBlock Text="{Binding User.FullName}" Margin="50,-30,0,0" FontStyle="Normal" Foreground="#215680"/>
+                                <TextBlock Text="{Binding Date}" Margin="50,-15,10,0" Foreground="#8c8e8f" FontSize="10"/>
+                                <TextBlock Text="{Binding Body}"
                                        Margin="0,0,0,0" Padding="12,5,12,5" Foreground="#4e4e4e"/>
 
-                            <Image Source="../Images/attention.png" Width="20px" 
+                                <Image Source="../Images/attention.png" Width="20px" 
                                    ToolTip="Сообщение содержит неподдерживаемый контент"
                                    Visibility="{Binding HasUndefinedContent, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,0"/>
 
-                            <TextBlock  Margin="0,0,0,0" Background="#cee2f2" Width="410" Height="1" HorizontalAlignment="Left"/>
+                                <TextBlock  Margin="0,0,0,0" Background="#cee2f2" Height="1" HorizontalAlignment="Stretch"/>
 
-                            <ListView ItemsSource="{Binding Attachments}" BorderThickness="0px">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image Source="../Images/gas.png" Width="20px"    
+                                <ListView ItemsSource="{Binding Attachments}" BorderThickness="0px">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image Source="../Images/gas.png" Width="20px"    
                                             Margin="5,0,0,0"/>
-                                            <TextBlock Text="{Binding File.FileName, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
+                                                <TextBlock Text="{Binding File.FileName, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
 
-                                            <Image Source="../Images/downloads.png" Width="20px"    
+                                                <Image Source="../Images/downloads.png" Width="20px"    
                                             Margin="5,0,0,0"/>
 
-                                            <Button Content="Загрузить"  Width="15" Height="15" Opacity="0" CommandParameter="{Binding}"
+                                                <Button Content="Загрузить"  Width="15" Height="15" Opacity="0" CommandParameter="{Binding}"
                                             Command="{Binding DataContext.DownloadFileCommand,
                                             RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Window} }}" Visibility="Visible" Margin="-22,0,0,0"/>
 
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
 
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-                <i:Interaction.Triggers>
-                    <local:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
-                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
-                    </local:RoutedEventTrigger>
-                    <!--<i:EventTrigger EventName="DataContextChanged">
-                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
-                    </i:EventTrigger>-->
-                </i:Interaction.Triggers>
-
-            </ListView>
-
-            <Image Grid.Row="1" gif:ImageBehavior.AnimatedSource="../Images/loading.gif"
-                   Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-            
-
-            <TextBox Grid.Row="2" Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
-                     IsEnabled="{Binding IsMessageSending, Converter={StaticResource InvertBooleanConverter}}"
-                     Margin="-67,2,0,24" Grid.RowSpan="2"/>
-            <StackPanel Grid.Row="3" Margin="-29,50,0,-12" Grid.RowSpan="2">
-                <StackPanel.Resources>
-                    <BooleanToVisibilityConverter  x:Key ="BooleanToVisibilityConverter"/>
-                    <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
-                </StackPanel.Resources>
-                <TextBlock Text="Потеряно соединение с сервером..."
-                               Foreground="Orange"
-                               Visibility="{Binding IsConnectionFailed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Добавить ключ" Height="30" Width="Auto" Margin="5"
-                            Command="{Binding SetFriendKeyCommand}" 
-                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}">
-                        <Button.CommandParameter>
-                            <s:Boolean>False</s:Boolean>
-                        </Button.CommandParameter>
-                    </Button>
-                    <Button Content="Изменить ключ" Height="30" Width="Auto" Margin="5"
-                            Command="{Binding SetFriendKeyCommand}"
-                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <Button.CommandParameter>
-                            <s:Boolean>True</s:Boolean>
-                        </Button.CommandParameter>
-                    </Button>
-                    <Button Content="Выбрать файл" Margin="5" Width="Auto" Height="30" 
-                            IsEnabled="{Binding IsSendButtonEnabled}" Command="{Binding UploadFileCommand}"/>
-                    <Button Content="Отправить" Command="{Binding SendMessageCommand}" Margin="5"
-                         IsEnabled="{Binding IsSendButtonEnabled}"
-                         Height="30"  Width="Auto"/>
-                    <Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Width="40px" 
-                       Visibility="{Binding IsMessageSending,Converter={StaticResource BooleanToVisibleOrHiddenConverter}}"/>
-                </StackPanel>
-                <ListView HorizontalAlignment="Left" BorderThickness="0px" ItemsSource="{Binding Message.Attachments}"
-                              Height="66" Width="226" Background="#2e72a3">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <ProgressBar Maximum="100" Minimum="0" Value="{Binding Progress}"
-                						Visibility="{Binding IsNotCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"
-                						Width="75px" ToolTip="{Binding ProgreccPercentString}"/>
-                                <Button Command="{Binding DataContext.CancelFileUploadCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}, Mode=FindAncestor}}"
-                						CommandParameter="{Binding}" Width="20" Height="20">
-                                    <Image Source="../Images/deny.png" Width="15px"/>
-                                </Button>
-                                <TextBlock Text="{Binding Document.FullName}"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
+                    <i:Interaction.Triggers>
+                        <local:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
+                            <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
+                        </local:RoutedEventTrigger>
+                        <!--<i:EventTrigger EventName="DataContextChanged">
+                        <cmd:EventToCommand Command="{Binding DownloadMessagesCommand}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>-->
+                    </i:Interaction.Triggers>
+
                 </ListView>
-            </StackPanel>
+                <!-- /Поле текстовое-->
+
+                <Image Grid.Row="1" gif:ImageBehavior.AnimatedSource="../Images/loading.gif"
+                   Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+
+                <TextBox Grid.Row="2" Margin="5,2,2,0" Padding="10" Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                     IsEnabled="{Binding IsMessageSending, Converter={StaticResource InvertBooleanConverter}}"/>
+
+
+                <!-- выбор файлов-->
+                <StackPanel Grid.Row="3" Margin="5,20,2,0" HorizontalAlignment="Center">
+                    <StackPanel.Resources>
+                        <BooleanToVisibilityConverter  x:Key ="BooleanToVisibilityConverter"/>
+                        <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
+                    </StackPanel.Resources>
+                    <TextBlock Text="Потеряно соединение с сервером..."
+                               Foreground="Orange"
+                               Visibility="{Binding IsConnectionFailed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Добавить ключ" Height="30" Width="100" Margin="5"
+                            Command="{Binding SetFriendKeyCommand}" 
+                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}">
+                            <Button.CommandParameter>
+                                <s:Boolean>False</s:Boolean>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Content="Изменить ключ" Height="30" Width="100" Margin="5"
+                            Command="{Binding SetFriendKeyCommand}"
+                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.CommandParameter>
+                                <s:Boolean>True</s:Boolean>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Content="Выбрать файл" Margin="5" Width="100" Height="30" 
+                            IsEnabled="{Binding IsSendButtonEnabled}" Command="{Binding UploadFileCommand}"/>
+                        <Button Content="Отправить" Command="{Binding SendMessageCommand}" Margin="5"
+                         IsEnabled="{Binding IsSendButtonEnabled}"
+                         Height="30"  Width="Auto"/>
+                        <Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Width="40px" 
+                       Visibility="{Binding IsMessageSending,Converter={StaticResource BooleanToVisibleOrHiddenConverter}}"/>
+                    </StackPanel>
+                    <ListView HorizontalAlignment="Left" BorderThickness="0px" ItemsSource="{Binding Message.Attachments}"
+                              Height="66" Width="226" Background="#2e72a3">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <ProgressBar Maximum="100" Minimum="0" Value="{Binding Progress}"
+                						Visibility="{Binding IsNotCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"
+                						Width="75px" ToolTip="{Binding ProgreccPercentString}"/>
+                                    <Button Command="{Binding DataContext.CancelFileUploadCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}, Mode=FindAncestor}}"
+                						CommandParameter="{Binding}" Width="20" Height="20">
+                                        <Image Source="../Images/deny.png" Width="15px"/>
+                                    </Button>
+                                    <TextBlock Text="{Binding Document.FullName}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+
+
+
+            </Grid>
+            <!-- /правый блок-->
         </Grid>
+        <!-- /body!-->
         
-        
+        <!-- footer!-->
+        <TextBlock Grid.Row="4" Grid.Column="1" FontFamily="Helvetica" Foreground="#c5d0fe" Text="IdeaFix ©2016" FontSize="15"  HorizontalAlignment="Center"  Margin="0,8,0,0"  Height="auto" RenderTransformOrigin="0.429,0.976"/>
+        <!-- /footer!-->
     </Grid>
 </Window>
