@@ -56,7 +56,7 @@
 
         <!-- body!-->
         <!-- сетка общая!-->
-        <Grid Grid.Row="2" Grid.ColumnSpan="3">
+        <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="0,3,0,29" Grid.RowSpan="3">
             <!-- Устанавливаем 1 строки -->
             <Grid.RowDefinitions>
                 <RowDefinition></RowDefinition>
@@ -108,7 +108,6 @@
                                     <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.OpenDialogCommand , 
                                     RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                               CommandParameter="{Binding}"/>
-
                                 </StackPanel.InputBindings>
 
                                 <Image Source="{Binding PhotoUrl}" Width="50px" Margin="2,2,2,2"/>
@@ -143,30 +142,27 @@
 
                 <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}" Padding="20,10,10,10" Margin="5,2,2,2" Background="#184568" Foreground="#e2eaf0" VerticalAlignment="Center"></TextBlock>
 
-
-
-                <ListView Height="Auto" Margin="5,2,2,0"
+                <ListView Height="Auto" Margin="5,2,2,0" x:Name="ListView" 
+                          ScrollViewer.HorizontalScrollBarVisibility ="Disabled"
                       Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource  InvertBooleanToVisibilityConverter}}"
-                Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger=PropertyChanged}"   >
-
+                Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger = PropertyChanged}">
                     <ListView.Resources>
                         <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
                     </ListView.Resources>
 
-
-                    <ListView.ItemTemplate >
+                    <ListView.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel HorizontalAlignment="Stretch" MinWidth="400">
+                            <StackPanel HorizontalAlignment="Stretch" Width="{Binding ActualWidth, ElementName=ListView}">
                                 <StackPanel.Style>
                                     <Style TargetType="StackPanel">
-                                        <Setter Property="Background" Value="{Binding IsNotRead, Converter={StaticResource UnreadToColorConverter}}"></Setter>
+                                        <Setter Property="Background" Value="{Binding IsNotRead, Converter={StaticResource UnreadToColorConverter}}"/>
                                     </Style>
                                 </StackPanel.Style>
                                 <Image HorizontalAlignment="Left" Source="{Binding User.PhotoUrl}" Width="30" Margin="10,5,0,0" MaxWidth="30" />
                                 <TextBlock Text="{Binding User.FullName}" Margin="50,-30,0,0" FontStyle="Normal" Foreground="#215680"/>
                                 <TextBlock Text="{Binding Date}" Margin="50,-15,10,0" Foreground="#8c8e8f" FontSize="10"/>
-                                <TextBlock Text="{Binding Body}"
-                                       Margin="0,0,0,0" Padding="12,5,12,5" Foreground="#4e4e4e"/>
+                                <TextBlock Text="{Binding Body}" TextWrapping="Wrap" Margin="0,0,10,0"
+                                        Padding="12,5,12,5" Foreground="#4e4e4e"/>
 
                                 <Image Source="../Images/attention.png" Width="20px" 
                                    ToolTip="Сообщение содержит неподдерживаемый контент"
@@ -187,7 +183,8 @@
 
                                                 <Button Content="Загрузить"  Width="15" Height="15" Opacity="0" CommandParameter="{Binding}"
                                             Command="{Binding DataContext.DownloadFileCommand,
-                                            RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Window} }}" Visibility="Visible" Margin="-22,0,0,0"/>
+                                            RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Window} }}"
+                                                        Visibility="Visible" Margin="-22,0,0,0"/>
 
                                             </StackPanel>
                                         </DataTemplate>
@@ -209,7 +206,7 @@
                 </ListView>
                 <!-- /Поле текстовое-->
 
-                <Image Grid.Row="1" gif:ImageBehavior.AnimatedSource="../Images/loading.gif"
+                <Image Grid.Row="1" gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Width="150px"
                    Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
 
@@ -267,9 +264,6 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </StackPanel>
-
-
-
             </Grid>
             <!-- /правый блок-->
         </Grid>
