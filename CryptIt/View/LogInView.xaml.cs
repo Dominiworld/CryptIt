@@ -17,5 +17,10 @@ namespace CryptIt.View
             model.ClosingRequest += (sender, args) => this.Close();
 
         }
+
+        private void Button_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+
+        }
     }
 }

@@ -22,7 +22,7 @@
             <Setter Property="Width" Value="210" />
             <Setter Property="Height" Value="45" />
             <Setter Property="Foreground" Value="#fff" />
-
+            <Setter Property="BorderThickness" Value="0px"/>
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
         </Style>
 

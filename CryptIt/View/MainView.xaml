@@ -11,6 +11,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:MainViewModel}"
         Title="CryptIt" MinHeight="600" MinWidth="800" Height="600" Width="800">
+
+        
     <!--Кароль величин-->
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
@@ -22,7 +24,6 @@
         <converters:BooleanToVisibleOrHiddenConverter x:Key="BooleanToVisibleOrHiddenConverter"/>
         <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
         <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
-
     </Window.Resources>
     <Grid Background="#2e72a3">
 
@@ -52,6 +53,8 @@
         <TextBlock Grid.Row="0" Grid.Column="1" FontFamily="Helvetica" Foreground="#c5d0fe" Text="ВКОНТАКТЕ"   Height="45" FontSize="30" RenderTransformOrigin="0.381,2.548" HorizontalAlignment="Center" Margin="0,10,0,0"/>
 
         <TextBlock Grid.Row="0" Grid.Column="1" FontFamily="Helvetica" FontStyle="Italic" Foreground="#b0e5b1" Text="CryptIt" FontSize="18" RenderTransformOrigin="0.429,0.976"  Margin="225,44,0,0"/>
+        <Image Grid.Row="0" Grid.Column="2" Source="../Images/logOut.png" Width="40px"  Margin="0,5,50,0" HorizontalAlignment="Right"/>
+        <Button Grid.Row="0" Grid.Column="2" Command="{Binding LogOutCommand}" Width="40px" Margin="0,5,50,0" HorizontalAlignment="Right" Opacity="0"/>
         <!-- /header!-->
 
         <!-- body!-->
@@ -210,12 +213,12 @@
                    Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
 
-                <TextBox Grid.Row="2" Margin="5,2,2,0" Padding="10" Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                <TextBox TextWrapping="Wrap" Grid.Row="2" Margin="5,2,2,0" Padding="10" Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
                      IsEnabled="{Binding IsMessageSending, Converter={StaticResource InvertBooleanConverter}}"/>
 
 
                 <!-- выбор файлов-->
-                <StackPanel Grid.Row="3" Margin="5,20,2,0" HorizontalAlignment="Center">
+                <StackPanel Grid.Row="3" Margin="0,20,2,0" HorizontalAlignment="Center">
                     <StackPanel.Resources>
                         <BooleanToVisibilityConverter  x:Key ="BooleanToVisibilityConverter"/>
                         <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
