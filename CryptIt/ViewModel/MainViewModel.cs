@@ -8,11 +8,13 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using CryptingTool;
 using CryptIt.Commands;
 using CryptIt.View;
+using GalaSoft.MvvmLight.CommandWpf;
 using Model;
 using Model.Files;
 using vkAPI;
@@ -77,6 +79,7 @@ namespace CryptIt.ViewModel
             DownloadFileCommand = new DelegateCommand<Attachment>(DownloadFile);
             CancelFileUploadCommand = new DelegateCommand<Attachment>(CancelFileUpload);
             OpenDialogCommand = new DelegateCommand<User>(OpenDialog);
+            LogOutCommand = new DelegateCommand(LogOut);
             GetStartInfo();
 
             SaveKeysFileDialog();
@@ -90,6 +93,8 @@ namespace CryptIt.ViewModel
         public DelegateCommand<bool> SetFriendKeyCommand { get; set; }
         public DelegateCommand<Attachment> DownloadFileCommand { get; set; }
         public DelegateCommand<Attachment> CancelFileUploadCommand { get; set; }
+        public DelegateCommand LogOutCommand { get; set; }
+
         #endregion commands
 
         #region public properties
@@ -811,6 +816,14 @@ namespace CryptIt.ViewModel
             Friends.Add(new User {Id = AuthorizeService.Instance.CurrentUserId, FirstName = "z", LastName = "z"});
             FoundFriends = Friends;
             GetDialogsInfo();
+        }
+
+        private void LogOut()
+        {
+            var window = new BrowserView();
+            window.WebBrowser.Navigate(new Uri(AuthorizeService.Instance.GetAuthorizeUrl()));
+            window.Show();
+            OnClosingRequest();
         }
     }
 }

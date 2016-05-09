@@ -11,9 +11,9 @@ namespace CryptIt.View
         public MainView()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            var model = new MainViewModel();
+            DataContext = model;
+            model.ClosingRequest += (sender, args) => Close();
         }
-
-        
     }
 }
