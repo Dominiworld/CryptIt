@@ -54,12 +54,15 @@ namespace CryptIt.ViewModel
 
         private bool ScrollToEnd { get; set; }
         private DownloadView DownloadView { get; set; }
-
+        private System.Media.SoundPlayer() player;
 
         #endregion private variables
 
         public MainViewModel()
         {
+            player = new System.Media.SoundPlayer();
+            player.Stream = Properties.Resources.MessageSound;
+                
             _longPollServer.GotNewMessageEvent += AddMessages;
             _longPollServer.MessageStateChangedToReadEvent += ChangeMessagesStateToRead;
             _longPollServer.UserBecameOnlineOrOfflineEvent += ChangeUserOnlineStatus;
@@ -692,8 +695,6 @@ namespace CryptIt.ViewModel
         {
             if (!message.Out && (SelectedUser == null || SelectedUser.Id != message.UserId))
             {
-                var player = new System.Media.SoundPlayer();
-                player.Stream = Properties.Resources.MessageSound;
                 player.Play();
             }
 
