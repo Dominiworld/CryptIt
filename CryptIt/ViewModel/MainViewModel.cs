@@ -25,7 +25,7 @@ using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace CryptIt.ViewModel
 {
-    public class MainViewModel:ViewModelBase
+    public class MainViewModel : ViewModelBase
     {
 
         #region private variables
@@ -65,7 +65,7 @@ namespace CryptIt.ViewModel
             _longPollServer.UserBecameOnlineOrOfflineEvent += ChangeUserOnlineStatus;
             _longPollServer.ConnectToLongPollServer();
 
-            Message  = new Message();
+            Message = new Message();
             DownloadView = new DownloadView();
             DownloadView.Closed += (sender, args) =>
             {
@@ -80,6 +80,7 @@ namespace CryptIt.ViewModel
             CancelFileUploadCommand = new DelegateCommand<Attachment>(CancelFileUpload);
             OpenDialogCommand = new DelegateCommand<User>(OpenDialog);
             LogOutCommand = new DelegateCommand(LogOut);
+
             GetStartInfo();
 
             SaveKeysFileDialog();
@@ -241,8 +242,8 @@ namespace CryptIt.ViewModel
             }
 
             _cryptTool.CreateRSAKey();
-            var writer = new StreamWriter(path + "\\"+myPublicKeyFileName);
-            writer.Write(myId + " " +Convert.ToBase64String(_cryptTool.keyRSAPublic));
+            var writer = new StreamWriter(path + "\\" + myPublicKeyFileName);
+            writer.Write(myId + " " + Convert.ToBase64String(_cryptTool.keyRSAPublic));
             writer.Close();
             writer = new StreamWriter(path + "\\" + myPrivateKeyFileName);
             writer.Write(Convert.ToBase64String(_cryptTool.keyRSAPrivate));
@@ -252,7 +253,7 @@ namespace CryptIt.ViewModel
         //выбор папки сохранения сгенерированных приватного и публичного ключей
         private void SaveKeysFileDialog()
         {
-           
+
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             var settings = config.AppSettings.Settings;
             if (settings[_keysFolderNameInAppSetting] == null || settings[_keysFolderNameInAppSetting].Value == "")
@@ -270,16 +271,16 @@ namespace CryptIt.ViewModel
                 else
                 {
                     settings.Add(_keysFolderNameInAppSetting, dialog.SelectedPath);
-                }          
+                }
                 config.Save(ConfigurationSaveMode.Modified);
             }
-           
+
             if (SetKeys("my_public.txt", "my_private.txt", settings[_keysFolderNameInAppSetting].Value))
             {
                 MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ (public_key.txt) собеседникам.");
             }
-           
-        } 
+
+        }
         //считываение публичного ключа друга из файла keys.txt
         private void GetKey(string fileName)
         {
@@ -308,7 +309,7 @@ namespace CryptIt.ViewModel
                     SelectedUser.KeyExists = keyFound;
                 }
             }
-        } 
+        }
         //загрузка публичного ключа друга в диалоге (нужно для отправки сообщений)
         private void SetFriendKey(bool changeExisting)
         {
@@ -347,14 +348,14 @@ namespace CryptIt.ViewModel
                 using (var reader = new StreamReader(keysFileName))
                 {
                     string line;
-                    while ((line = reader.ReadLine())!=null)
+                    while ((line = reader.ReadLine()) != null)
                     {
                         lines.Add(line);
                     }
                     var usersLine = lines.FirstOrDefault(l => l.StartsWith(SelectedUser.Id.ToString()));
                     lines.Remove(usersLine);
                 }
-                using (var writer = new StreamWriter(keysFileName,false))
+                using (var writer = new StreamWriter(keysFileName, false))
                 {
                     foreach (var line in lines)
                     {
@@ -580,7 +581,6 @@ namespace CryptIt.ViewModel
                 }
 
                 Messages = messages;
-
             }
             catch (NullReferenceException ex)
             {
@@ -598,6 +598,12 @@ namespace CryptIt.ViewModel
                 ScrollToEnd = true;
             }
             SelectedUser.NumberOfNewMessages = null;
+
+            var sortedUnreadList =
+                FoundFriends.Where(f => f.NumberOfNewMessages != null).ToList();
+            sortedUnreadList.AddRange(FoundFriends.Where(f => f.NumberOfNewMessages == null).OrderBy(f => f.FullName).ToList());
+            FoundFriends = new List<User>(sortedUnreadList);
+
             if (Messages.Count != 0 && !Messages[0].Out)
             {
                 _messageService.MarkMessagesAsRead(new List<int> { Messages[0].Id }, SelectedUser.Id);
@@ -622,9 +628,14 @@ namespace CryptIt.ViewModel
                     if (friend != null)
                     {
                         friend.NumberOfNewMessages = dialog.UnreadMessagesAmount;
-                        OnPropertyChanged("FoundFriends");
+                        //UnreadDialogs.Add(friend);
                     }
                 }
+                var newDialogFriends = FoundFriends.Where(f => f.NumberOfNewMessages != null).ToList();
+                var readDialofFriends = FoundFriends.Where(f => f.NumberOfNewMessages == null).ToList();
+                newDialogFriends.AddRange(readDialofFriends);
+                FoundFriends = newDialogFriends;
+                OnPropertyChanged("FoundFriends");
             }
             catch (WebException)
             {
@@ -679,22 +690,18 @@ namespace CryptIt.ViewModel
         }
         private void AddMessages(Message message)
         {
-            if (SelectedUser == null ||
-                (message.Out && message.Body.StartsWith(_cryptTool._isCryptedFlag))) //не выводим свое отправленное зашифрованное сообщение - незачем
-                return;
-
-            var decryptedMessage = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
-            message.Body = decryptedMessage;
-            TakeFileNamesFromBody(message);
-            if (message.Attachments != null && message.Attachments.Where(a => a.File == null).ToList().Count != 0)
+            if (!message.Out && (SelectedUser == null || SelectedUser.Id != message.UserId))
             {
-                message.HasUndefinedContent = true;
-                message.Attachments = new ObservableCollection<Attachment>(message.Attachments.Where(a => a.File != null));
+                var player = new System.Media.SoundPlayer();
+                player.Stream = Properties.Resources.MessageSound;
+                player.Play();
             }
 
-            if (message.UserId != SelectedUser.Id && !message.Out)
-            {
+            if (message.Out && message.Body.StartsWith(_cryptTool._isCryptedFlag)) //не выводим свое отправленное зашифрованное сообщение - незачем
+                return;
 
+            if ((SelectedUser == null || message.UserId != SelectedUser.Id) && !message.Out)
+            {
                 var friend = FoundFriends.FirstOrDefault(f => f.Id == message.UserId);
                 if (friend != null)
                 {
@@ -706,9 +713,28 @@ namespace CryptIt.ViewModel
                     {
                         friend.NumberOfNewMessages++;
                     }
+                    //UnreadDialogs.Add(friend);
+                    FoundFriends.Remove(friend);
+                    FoundFriends.Insert(0, friend);
+                    FoundFriends = new List<User>(FoundFriends);
                 }
                 OnPropertyChanged("FoundFriends");
             }
+
+            if (SelectedUser == null)
+                return;
+
+
+            var decryptedMessage = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
+            message.Body = decryptedMessage;
+            TakeFileNamesFromBody(message);
+            if (message.Attachments != null && message.Attachments.Where(a => a.File == null).ToList().Count != 0)
+            {
+                message.HasUndefinedContent = true;
+                message.Attachments = new ObservableCollection<Attachment>(message.Attachments.Where(a => a.File != null));
+            }
+
+
             if (message.UserId != SelectedUser.Id) return;
             message.User = message.Out ? AuthorizeService.Instance.CurrentUser : SelectedUser;
 
@@ -738,22 +764,22 @@ namespace CryptIt.ViewModel
 
         private void SearchFriends()
         {
-            FoundFriends = string.IsNullOrEmpty(SearchString) ? 
+            FoundFriends = string.IsNullOrEmpty(SearchString) ?
                 Friends :
                 Friends.Where(f => f.FullName.ToLower().Contains(SearchString.ToLower())).ToList();
         }
         private void ChangeUserOnlineStatus(int userId, bool online)
         {
             var friend = Friends.FirstOrDefault(f => f.Id == userId);
-            if (friend != null) friend.Online = online? 1 : 0;
+            if (friend != null) friend.Online = online ? 1 : 0;
         }
         private void ChangeMessagesStateToRead(int lastReadId, int peerId)
         {
             if (SelectedUser?.Id == peerId)
             {
-                foreach (var message in Messages.ToArray().Where(m=>m.Id <= lastReadId))
+                foreach (var message in Messages.ToArray().Where(m => m.Id <= lastReadId))
                 {
-                    message.IsNotRead = false;                   
+                    message.IsNotRead = false;
                 }
                 OnPropertyChanged("Messages");
             }
@@ -794,14 +820,6 @@ namespace CryptIt.ViewModel
 
         private async void GetStartInfo()
         {
-            var enc = Encoding.GetEncoding(1252);
-            Console.WriteLine(enc.BodyName);
-            var en = Encoding.GetEncodings();
-            foreach (var encodingInfo in en)
-            {
-                Console.WriteLine(encodingInfo.DisplayName + " " + encodingInfo.Name);
-            }
-            Console.WriteLine(Encoding.GetEncodings());
 
             try
             {
@@ -813,7 +831,7 @@ namespace CryptIt.ViewModel
                 return;
             }
             Friends = Friends.OrderBy(f => f.LastName).ToList();
-            Friends.Add(new User {Id = AuthorizeService.Instance.CurrentUserId, FirstName = "z", LastName = "z"});
+            // Friends.Add(AuthorizeService.Instance.CurrentUser);
             FoundFriends = Friends;
             GetDialogsInfo();
         }
