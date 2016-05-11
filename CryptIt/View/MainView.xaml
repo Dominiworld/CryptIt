@@ -213,7 +213,9 @@
                    Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
 
-                <TextBox TextWrapping="Wrap" Grid.Row="2" Margin="5,2,2,0" Padding="10" Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                <TextBox TextWrapping="Wrap" Grid.Row="2" Margin="5,2,2,0" Padding="10" 
+                         AcceptsReturn ="True"
+                         Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
                      IsEnabled="{Binding IsMessageSending, Converter={StaticResource InvertBooleanConverter}}"/>
 
 

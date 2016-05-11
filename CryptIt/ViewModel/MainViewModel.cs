@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -54,15 +55,11 @@ namespace CryptIt.ViewModel
 
         private bool ScrollToEnd { get; set; }
         private DownloadView DownloadView { get; set; }
-        private System.Media.SoundPlayer() player;
 
         #endregion private variables
 
         public MainViewModel()
         {
-            player = new System.Media.SoundPlayer();
-            player.Stream = Properties.Resources.MessageSound;
-                
             _longPollServer.GotNewMessageEvent += AddMessages;
             _longPollServer.MessageStateChangedToReadEvent += ChangeMessagesStateToRead;
             _longPollServer.UserBecameOnlineOrOfflineEvent += ChangeUserOnlineStatus;
@@ -544,7 +541,6 @@ namespace CryptIt.ViewModel
                     await _messageService.SendMessage(SelectedUser.Id, Message);
                     Message = new Message();
                     AddMessages(simpleMessage);
-
                 }
             }
             catch (WebException)
@@ -692,11 +688,7 @@ namespace CryptIt.ViewModel
             }
         }
         private void AddMessages(Message message)
-        {
-            if (!message.Out && (SelectedUser == null || SelectedUser.Id != message.UserId))
-            {
-                player.Play();
-            }
+        { 
 
             if (message.Out && message.Body.StartsWith(_cryptTool._isCryptedFlag)) //не выводим свое отправленное зашифрованное сообщение - незачем
                 return;

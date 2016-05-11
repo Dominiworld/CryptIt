@@ -59,14 +59,5 @@ namespace CryptIt.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
-        public static System.IO.UnmanagedMemoryStream MessageSound {
-            get {
-                return ResourceManager.GetStream("MessageSound", resourceCulture);
-            }
-        }
     }
 }
