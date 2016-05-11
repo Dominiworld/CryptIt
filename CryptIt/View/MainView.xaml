@@ -150,7 +150,7 @@
                       Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource  InvertBooleanToVisibilityConverter}}"
                 Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger = PropertyChanged}">
                     <ListView.Resources>
-                        <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#e5b8d3"/>
+                        <converters:UnreadToColorConverter x:Key="UnreadToColorConverter" UnRead="#c7d4e0"/>
                     </ListView.Resources>
 
                     <ListView.ItemTemplate>
