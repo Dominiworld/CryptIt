@@ -621,8 +621,12 @@ namespace CryptIt.ViewModel
             try
             {
                 var unreadDialogs = await _messageService.GetDialogs(true);
+
                 foreach (var dialog in unreadDialogs)
                 {
+                    if (dialog.Message.ChatId != 0)                   
+                        continue;
+                    
                     var friend = FoundFriends.FirstOrDefault(f => f.Id == dialog.Message.UserId);
                     if (friend != null)
                     {

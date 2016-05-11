@@ -15,8 +15,16 @@ namespace Model
 
         [JsonProperty("id")]
         public int Id { get; set; }
+
         [JsonProperty("user_id")]
         public int UserId { get; set; }
+
+        [JsonProperty("from_id")]
+        public int PeerId { get; set; }
+
+        [JsonProperty("chat_id")]
+        public int ChatId { get; set; }
+
         public User User { get; set; }
         public DateTime Date
         {
