@@ -9,7 +9,7 @@
 
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:DownloadViewModel}"
-        Title="Загрузка" Height="300" Width="600" ResizeMode="CanResizeWithGrip">
+        Title="Загрузка" MinHeight="200" Height="200" MinWidth="600" MaxWidth="600" ResizeMode="CanResizeWithGrip">
     <Window.Resources>
         <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
     </Window.Resources>
@@ -20,7 +20,7 @@
                     <GridView.Columns>
                     <GridViewColumn DisplayMemberBinding="{Binding File.FileName}" Header="Имя файла" Width="200">
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding ProgreccPercentString}" Header="Загружено" Width="50"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding ProgreccPercentString}" Header="Загружено" Width="100"/>
                     <GridViewColumn Width="200">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -33,6 +33,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                     </GridView.Columns>
+                
                 </GridView>
             </ListView.View>
         </ListView>

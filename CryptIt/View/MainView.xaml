@@ -59,7 +59,7 @@
 
         <!-- body!-->
         <!-- сетка общая!-->
-        <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="0,3,0,29" Grid.RowSpan="3">
+        <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="0,3,0,32" Grid.RowSpan="3">
             <!-- Устанавливаем 1 строки -->
             <Grid.RowDefinitions>
                 <RowDefinition></RowDefinition>
@@ -116,7 +116,7 @@
                                 <Image Source="{Binding PhotoUrl}" Width="50px" Margin="2,2,2,2"/>
                                 <TextBlock Text="{Binding FullName}" Width="150px" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 <TextBlock Text="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Width="50px" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding NumberOfNewMessages, UpdateSourceTrigger=PropertyChanged}" Width="20px"/>
+                                <TextBlock Text="{Binding NumberOfNewMessages, UpdateSourceTrigger=PropertyChanged}" Width="20px" VerticalAlignment="Center"/>
                                 <TextBlock  Margin="-290,0,-25,0" VerticalAlignment="Bottom" Background="#9bb5ca" Height="1" HorizontalAlignment="Stretch" />
                             </StackPanel>
 
@@ -134,7 +134,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"></RowDefinition>
                     <RowDefinition MinHeight="280" Height="*"></RowDefinition>
-                    <RowDefinition MinHeight="80" MaxHeight="160"></RowDefinition>
+                    <RowDefinition MinHeight="80" MaxHeight="100"></RowDefinition>
                     <RowDefinition Height="80"></RowDefinition>
 
                 </Grid.RowDefinitions>
@@ -145,7 +145,7 @@
 
                 <TextBlock Grid.Row="0" Text ="{Binding SelectedUser.FullName}" Padding="20,10,10,10" Margin="5,2,2,2" Background="#184568" Foreground="#e2eaf0" VerticalAlignment="Center"></TextBlock>
 
-                <ListView Height="Auto" Margin="5,2,2,0" x:Name="ListView" 
+                <ListView  Height="Auto" Margin="5,2,2,0" x:Name="ListView" 
                           ScrollViewer.HorizontalScrollBarVisibility ="Disabled"
                       Visibility="{Binding IsMessageLoaderVisible, Converter={StaticResource  InvertBooleanToVisibilityConverter}}"
                 Grid.Row="1" ItemsSource="{Binding Messages, UpdateSourceTrigger = PropertyChanged}">
@@ -214,13 +214,14 @@
 
 
                 <TextBox TextWrapping="Wrap" Grid.Row="2" Margin="5,2,2,0" Padding="10" 
-                         AcceptsReturn ="True"
+                         AcceptsReturn ="True" ScrollViewer.VerticalScrollBarVisibility="Visible"  
+                          MinHeight="70"  MaxHeight="91" VerticalAlignment="Top"
                          Text="{Binding Message.Body, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
                      IsEnabled="{Binding IsMessageSending, Converter={StaticResource InvertBooleanConverter}}"/>
 
 
                 <!-- выбор файлов-->
-                <StackPanel Grid.Row="3" Margin="0,20,2,0" HorizontalAlignment="Center">
+                <StackPanel Grid.Row="3" Margin="0,7,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
                     <StackPanel.Resources>
                         <BooleanToVisibilityConverter  x:Key ="BooleanToVisibilityConverter"/>
                         <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
@@ -228,30 +229,32 @@
                     <TextBlock Text="Потеряно соединение с сервером..."
                                Foreground="Orange"
                                Visibility="{Binding IsConnectionFailed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Добавить ключ" Height="30" Width="100" Margin="5"
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="345">
+                        <Button Content="Добавить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
                             Command="{Binding SetFriendKeyCommand}" 
                             Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}">
                             <Button.CommandParameter>
                                 <s:Boolean>False</s:Boolean>
                             </Button.CommandParameter>
                         </Button>
-                        <Button Content="Изменить ключ" Height="30" Width="100" Margin="5"
+                        <Button Content="Изменить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
                             Command="{Binding SetFriendKeyCommand}"
                             Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Button.CommandParameter>
                                 <s:Boolean>True</s:Boolean>
                             </Button.CommandParameter>
                         </Button>
-                        <Button Content="Выбрать файл" Margin="5" Width="100" Height="30" 
+                        <Button Content="Выбрать файл" Margin="5" Width="105" Height="30" HorizontalAlignment="Center"
                             IsEnabled="{Binding IsSendButtonEnabled}" Command="{Binding UploadFileCommand}"/>
-                        <Button Content="Отправить" Command="{Binding SendMessageCommand}" Margin="5"
+                        <Button Content="Отправить" Margin="5" Command="{Binding SendMessageCommand}" HorizontalAlignment="Center"
                          IsEnabled="{Binding IsSendButtonEnabled}"
-                         Height="30"  Width="Auto"/>
+                         Height="30"  Width="105"/>
                         <Image gif:ImageBehavior.AnimatedSource="../Images/loading.gif" Width="40px" 
                        Visibility="{Binding IsMessageSending,Converter={StaticResource BooleanToVisibleOrHiddenConverter}}"/>
                     </StackPanel>
-                    <ListView HorizontalAlignment="Left" BorderThickness="0px" ItemsSource="{Binding Message.Attachments}"
+
+                    <ListView HorizontalAlignment="Center" BorderThickness="0px" ItemsSource="{Binding Message.Attachments}"
                               Height="66" Width="226" Background="#2e72a3">
                         <ListView.ItemTemplate>
                             <DataTemplate>
@@ -268,6 +271,8 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+
+
                 </StackPanel>
             </Grid>
             <!-- /правый блок-->
