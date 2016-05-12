@@ -24,6 +24,8 @@
         <converters:BooleanToVisibleOrHiddenConverter x:Key="BooleanToVisibleOrHiddenConverter"/>
         <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
         <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter"/>
+        <converters:InvertBooleanToVisibilityCollapsedConverter
+            x:Key="InvertBooleanToVisibilityCollapsedConverter"/>
     </Window.Resources>
     <Grid Background="#2e72a3">
 
@@ -233,7 +235,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="345">
                         <Button Content="Добавить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
                             Command="{Binding SetFriendKeyCommand}" 
-                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityConverter}}">
+                            Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityCollapsedConverter}}">
                             <Button.CommandParameter>
                                 <s:Boolean>False</s:Boolean>
                             </Button.CommandParameter>
