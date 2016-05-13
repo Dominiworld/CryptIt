@@ -296,9 +296,9 @@ namespace CryptIt.ViewModel
         //поиск запроса ключа и ответ на него - вызывать для всех "новых" сообщений
         private async Task<bool> FindKeyRequestAndReply(Message message)
         {
-            if (message.Body == _requestKeyString)
+            if (message.Body == _requestKeyString && !message.Out)
             {
-                await SendPublicKey(message.UserId);
+                await SendPublicKey(message.UserId, message.Id);
                 return true;
             }
             return false;
@@ -327,23 +327,21 @@ namespace CryptIt.ViewModel
         //ищем в сообщениях запрос ключа и сам ключ
         private async void PraseMessages(List<Message> messages)
         {
-            if (!SelectedUser.KeyExists)
+            bool keySend = false;
+            foreach (var message in messages)
             {
-                bool keySend = false;
-                foreach (var message in messages)
+                if (!keySend)
                 {
-                    if (!keySend)
-                    {
-                        keySend = await FindKeyRequestAndReply(message);
-                    }
-                    if (!SelectedUser.KeyExists)
-                    {
-                        await GetKeyFileFromMessage(message);
-                    }
-                    if (keySend && SelectedUser.KeyExists)
-                        break;
+                    keySend = await FindKeyRequestAndReply(message);
                 }
+                if (!SelectedUser.KeyExists)
+                {
+                    await GetKeyFileFromMessage(message);
+                }
+                if (keySend && SelectedUser.KeyExists)
+                    break;
             }
+            
         }
 
         //загрузка публичного ключа друга в диалоге (нужно для отправки сообщений)
@@ -424,7 +422,7 @@ namespace CryptIt.ViewModel
         }
 
         //отправить свой ключ другу - автоматом
-        private async Task SendPublicKey(int userId)
+        private async Task SendPublicKey(int userId, int messageToRemove)
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             
@@ -468,6 +466,8 @@ namespace CryptIt.ViewModel
                 Body = "key"
             };
             await _messageService.SendMessage(userId, message);
+            await _messageService.RemoveMessage(messageToRemove);
+
         }
 
         //выбор папки сохранения сгенерированных приватного и публичного ключей

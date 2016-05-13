@@ -278,12 +278,6 @@ namespace CryptingTool
             var enc = Encoding.GetEncoding(1252);
             if (des2 == _mobileFlag)
             {
-                //message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
-                //var len = message.Length;
-                //string encryptedSymmetricKey = message.Substring(0, 344);
-                //byte[] receivedData = Encoding.Default.GetBytes(message.Substring(344));
-                //string symmetricKey = DecryptString(encryptedSymmetricKey);
-
                 message = message.Substring(_desktopFlag.Length + _isCryptedFlag.Length).FromBase64();
                 var len = message.Length;
                 string encryptedSymmetricKey = message.Substring(0, 344);
@@ -291,7 +285,7 @@ namespace CryptingTool
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
                 if (symmetricKey == encryptedSymmetricKey)
                 {
-                    return message;
+                    return "Зашифрованное сообщение";
                 }
                 return Decrypt(receivedData, symmetricKey);
             }
@@ -306,7 +300,7 @@ namespace CryptingTool
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
                 if (symmetricKey == encryptedSymmetricKey)
                 {
-                    return message;
+                    return "Зашифрованное сообщение";
                 }
 
                 if (VerifySignature(receivedData, receivedSignature, receivedPubKey))

@@ -103,5 +103,13 @@ namespace vkAPI
             return JsonConvert.DeserializeObject<Message>(obj["response"]["items"][0].ToString());
         }
 
+        public async Task RemoveMessage(int id)
+        {
+            var token = AuthorizeService.Instance.AccessToken;
+            var url =
+               $"https://api.vk.com/method/messages.delete?v=5.45&access_token={token}&message_ids={id}";
+            await GetUrl(url);
+        }
+
     }
 }
