@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Model;
@@ -73,9 +74,15 @@ namespace vkAPI
                 var attachmentString = string.Join(",", attachments);
                 url+= $"&attachment={attachmentString}"; 
             }          
-
             var id =  await GetUrl(url);
-            return JsonConvert.DeserializeObject<int>(id["response"].ToString());
+            try
+            {
+                return JsonConvert.DeserializeObject<int>(id["response"].ToString());
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
         }
 
         public async void MarkMessagesAsRead(List<int> messageIds, int peerId)
