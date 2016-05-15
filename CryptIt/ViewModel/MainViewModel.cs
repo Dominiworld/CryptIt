@@ -41,8 +41,12 @@ namespace CryptIt.ViewModel
         private Message _message;
         private List<User> _foundFriends;
         private string _searchString;
+        private string _publicFileName = $"_public.txt";
         private string _keysFileName = "keys.txt";
         private readonly string _keysFolderNameInAppSetting = "key_folder";
+        private readonly string _requestKeyString = "Key request";
+        private readonly string _keyTag = $"crypt_it_key_{AuthorizeService.Instance.CurrentUserId}";
+        private string _keysPath;
 
         private readonly CryptTool _cryptTool = CryptTool.Instance;
 
@@ -72,7 +76,6 @@ namespace CryptIt.ViewModel
                 DownloadView = new DownloadView();
             };
 
-            SetFriendKeyCommand = new DelegateCommand<bool>(SetFriendKey);
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
             DownloadMessagesCommand = new DelegateCommand<ScrollChangedEventArgs>(DownloadMessages);
@@ -80,10 +83,11 @@ namespace CryptIt.ViewModel
             CancelFileUploadCommand = new DelegateCommand<Attachment>(CancelFileUpload);
             OpenDialogCommand = new DelegateCommand<User>(OpenDialog);
             LogOutCommand = new DelegateCommand(LogOut);
+            SendKeyRequestCommand = new DelegateCommand(SendKeyRequest);
 
             GetStartInfo();
-
             SaveKeysFileDialog();
+
         }
 
         #region commands
@@ -91,10 +95,11 @@ namespace CryptIt.ViewModel
         public DelegateCommand<ScrollChangedEventArgs> DownloadMessagesCommand { get; set; }
         public DelegateCommand UploadFileCommand { get; set; }
         public DelegateCommand SendMessageCommand { get; set; }
-        public DelegateCommand<bool> SetFriendKeyCommand { get; set; }
         public DelegateCommand<Attachment> DownloadFileCommand { get; set; }
         public DelegateCommand<Attachment> CancelFileUploadCommand { get; set; }
         public DelegateCommand LogOutCommand { get; set; }
+        public DelegateCommand SendKeyRequestCommand { get; set; }
+        
 
         #endregion commands
 
@@ -249,37 +254,7 @@ namespace CryptIt.ViewModel
             writer.Close();
             return true;
         }
-        //выбор папки сохранения сгенерированных приватного и публичного ключей
-        private void SaveKeysFileDialog()
-        {
 
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = config.AppSettings.Settings;
-            if (settings[_keysFolderNameInAppSetting] == null || settings[_keysFolderNameInAppSetting].Value == "")
-            {
-                MessageBox.Show(
-               "Не определен путь к файлам с ключами. Выберите папку, в которой лежат ключи или где хотите сохранить новые ключи, если они отсутствуют");
-
-                var dialog = new FolderBrowserDialog { ShowNewFolderButton = true };
-                if (dialog.ShowDialog() != DialogResult.OK)
-                    return;
-                if (settings[_keysFolderNameInAppSetting] != null)
-                {
-                    settings[_keysFolderNameInAppSetting].Value = dialog.SelectedPath;
-                }
-                else
-                {
-                    settings.Add(_keysFolderNameInAppSetting, dialog.SelectedPath);
-                }
-                config.Save(ConfigurationSaveMode.Modified);
-            }
-
-            if (SetKeys("my_public.txt", "my_private.txt", settings[_keysFolderNameInAppSetting].Value))
-            {
-                MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ (public_key.txt) собеседникам.");
-            }
-
-        }
         //считываение публичного ключа друга из файла keys.txt
         private void GetKey(string fileName)
         {
@@ -309,14 +284,68 @@ namespace CryptIt.ViewModel
                 }
             }
         }
-        //загрузка публичного ключа друга в диалоге (нужно для отправки сообщений)
-        private void SetFriendKey(bool changeExisting)
-        {
-            var dialog = new OpenFileDialog();
-            if (dialog.ShowDialog() != true)
-                return;
 
-            var fileName = dialog.FileName;
+        //запрос ключа друга
+        private async void SendKeyRequest()
+        {
+            var message = new Message { Body = _requestKeyString };
+            await _messageService.SendMessage(SelectedUser.Id, message);
+        }
+
+        //поиск запроса ключа и ответ на него - вызывать для всех "новых" сообщений
+        private async Task<bool> FindKeyRequestAndReply(Message message)
+        {
+            if (message.Body == _requestKeyString && !message.Out)
+            {
+                await SendPublicKey(message.UserId, message.Id);
+                return true;
+            }
+            return false;
+        }
+
+        //поиск файла с ключом среди сообщений - вызывать для всех "новых" сообщений
+        private async Task GetKeyFileFromMessage(Message message)
+        {
+            if (message.Attachments == null)
+                return;
+            foreach (var attachment in message.Attachments)
+            {
+                var fileName = attachment.File.FileName;
+                if (fileName == message.UserId + _publicFileName)
+                {
+                    using (var client = new WebClient())
+                    {
+                        await client.DownloadFileTaskAsync(attachment.File.Url, fileName);
+                        SetFriendKey(SelectedUser.KeyExists, fileName);
+                        File.Delete(fileName);
+                    }                   
+                }
+            }
+        }
+
+        //ищем в сообщениях запрос ключа и сам ключ
+        private async void PraseMessages(List<Message> messages)
+        {
+            bool keySend = false;
+            foreach (var message in messages)
+            {
+                if (!keySend)
+                {
+                    keySend = await FindKeyRequestAndReply(message);
+                }
+                if (!SelectedUser.KeyExists)
+                {
+                    await GetKeyFileFromMessage(message);
+                }
+                if (keySend && SelectedUser.KeyExists)
+                    break;
+            }
+            
+        }
+
+        //загрузка публичного ключа друга в диалоге (нужно для отправки сообщений)
+        private void SetFriendKey(bool changeExisting, string fileName)
+        {
             string key;
             using (var reader = new StreamReader(fileName))
             {
@@ -371,6 +400,108 @@ namespace CryptIt.ViewModel
             }
         }
 
+        //загрузка своего ключа в документы
+        private async Task<Document> SavePublicKeyInVkDocs(string path)
+        {
+            using (var client = new WebClient())
+            {
+                var url = await _fileService.GetUploadUrl(path);
+
+                byte[] file = null;
+                try
+                {
+                    file = await client.UploadFileTaskAsync(url, path);
+                }
+                catch (WebException)
+                {
+                    return null;
+                }
+                return await _fileService.UploadFile(path, file, _keyTag);
+            }
+        }
+
+        //отправить свой ключ другу - автоматом
+        private async Task SendPublicKey(int userId, int messageToRemove)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            
+            var settings = config.AppSettings.Settings;
+            var confName = "public_key_id";
+            var docIdPath = settings[confName];
+
+            var id = AuthorizeService.Instance.CurrentUserId;
+
+            Document doc = null;
+            if (docIdPath != null && docIdPath.Value!="")
+            {
+                //берем ключ с документов вк      
+                doc = (await _fileService.GetDocumentById(id + "_" + docIdPath.Value));
+            }
+
+            if (doc == null)
+            {
+                //есл в документах нет, загружаем
+                if ((doc = await SavePublicKeyInVkDocs(Path.Combine(_keysPath, id + _publicFileName))) == null)
+                    return;
+
+                //сохраняем id, чтобы потом файл с вк вытащить
+                if (docIdPath == null)
+                {
+                    settings.Add(confName, doc.Id.ToString());
+                }
+                else
+                {
+                    settings[confName].Value = doc.Id.ToString();
+                }
+                config.Save(ConfigurationSaveMode.Modified);
+
+            }
+            var message = new Message
+            {
+                Attachments = new ObservableCollection<Attachment>
+                {
+                    new Attachment {Document = doc, Type = "doc"}
+                },
+                Body = "key"
+            };
+            await _messageService.SendMessage(userId, message);
+            await _messageService.RemoveMessage(messageToRemove);
+
+        }
+
+        //выбор папки сохранения сгенерированных приватного и публичного ключей
+        private void SaveKeysFileDialog()
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = config.AppSettings.Settings;
+            if (settings[_keysFolderNameInAppSetting] == null || settings[_keysFolderNameInAppSetting].Value == "")
+            {
+                MessageBox.Show(
+               "Не определен путь к файлам с ключами. Выберите папку, в которой лежат ключи или где хотите сохранить новые ключи, если они отсутствуют");
+
+                var dialog = new FolderBrowserDialog { ShowNewFolderButton = true };
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+                if (settings[_keysFolderNameInAppSetting] != null)
+                {
+                    settings[_keysFolderNameInAppSetting].Value = dialog.SelectedPath;
+                }
+                else
+                {
+                    settings.Add(_keysFolderNameInAppSetting, dialog.SelectedPath);
+                }
+                config.Save(ConfigurationSaveMode.Modified);
+            }
+
+            var id = AuthorizeService.Instance.CurrentUserId;
+            if (SetKeys(id+_publicFileName, "my_private.txt", settings[_keysFolderNameInAppSetting].Value))
+            {
+                MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ собеседникам.");
+            }
+
+            _keysPath = settings[_keysFolderNameInAppSetting].Value;
+        }
+
         #endregion key functions
 
         #region functions for files
@@ -421,7 +552,7 @@ namespace CryptIt.ViewModel
 
             using (var client = new WebClient())
             {
-                var url = await _fileService.GetUploadUrl(fileName, userId);
+                var url = await _fileService.GetUploadUrl(fileName);
                 client.UploadProgressChanged += (sender, args) =>
                 {
                     attachment.Progress = 100 * (float)args.BytesSent / args.TotalBytesToSend;
@@ -550,6 +681,7 @@ namespace CryptIt.ViewModel
             }
         }
 
+
         private async Task GetMessages(User user)
         {
             var previousSelected = SelectedUser;
@@ -557,6 +689,9 @@ namespace CryptIt.ViewModel
             {
                 SelectedUser = user;
                 var messages = (await _messageService.GetDialog(SelectedUser.Id)).OrderBy(m => m.Date).ToList();
+
+                PraseMessages(messages);
+
                 foreach (var message in messages.ToArray())
                 {
                     message.Body = _cryptTool.SplitAndUnpackReceivedMessage(message.Body);
@@ -688,7 +823,7 @@ namespace CryptIt.ViewModel
                 ScrollToEnd = false;
             }
         }
-        private void AddMessages(Message message)
+        private async void AddMessages(Message message)
         { 
 
             if (message.Out && message.Body.StartsWith(_cryptTool._isCryptedFlag)) //не выводим свое отправленное зашифрованное сообщение - незачем
@@ -738,6 +873,8 @@ namespace CryptIt.ViewModel
                 {
                     message.IsNotRead = false;
                     _messageService.MarkMessagesAsRead(new List<int> { message.Id }, SelectedUser.Id);
+                    await FindKeyRequestAndReply(message);
+                    await GetKeyFileFromMessage(message);
                 }
                 catch (Exception)
                 {
@@ -750,7 +887,6 @@ namespace CryptIt.ViewModel
             messages.Add(message);
             Messages = messages;
             ScrollToEnd = true;
-
         }
         #endregion functions for messages
 
@@ -825,7 +961,7 @@ namespace CryptIt.ViewModel
                 return;
             }
             Friends = Friends.OrderBy(f => f.LastName).ToList();
-            // Friends.Add(AuthorizeService.Instance.CurrentUser);
+            Friends.Add(AuthorizeService.Instance.CurrentUser);
             FoundFriends = Friends;
             GetDialogsInfo();
         }

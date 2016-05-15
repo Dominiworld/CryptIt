@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -18,10 +19,9 @@ namespace vkAPI
         ///  Call GetUploadUrl, then webClient.UploadFileTaskAsync and call  UploadFile
         /// </summary>
         /// <param name="fileName"></param>
-        /// <param name="userId"></param>
         /// <returns></returns>
 
-        public async Task<string> GetUploadUrl(string fileName, int userId)
+        public async Task<string> GetUploadUrl(string fileName)
         {
             using (var client = new WebClient())
             {
@@ -33,7 +33,7 @@ namespace vkAPI
             }
         }
 
-        public async Task<Document> UploadFile(string fileName, byte[] file) 
+        public async Task<Document> UploadFile(string fileName, byte[] file, string tags = null) 
         {
             using (var client = new System.Net.WebClient())
             {
@@ -48,6 +48,10 @@ namespace vkAPI
                 
                 var u3 = "https://api.vk.com/method/docs.save?v=5.45&access_token=" + _token
                          + "&file=" + j2["file"];
+                if (tags!=null)
+                {
+                    u3 += "&tags=" + tags;
+                }
                 var docObj = await GetUrl(u3);
                //todo проверка ошибки на капчу
                 var doc = JsonConvert.DeserializeObject<Document>(docObj["response"][0].ToString());
@@ -79,6 +83,19 @@ namespace vkAPI
             return docs;
         }
 
+        public async Task<Document> GetDocumentById(string fullId)
+        {       
+            var token = AuthorizeService.Instance.AccessToken;
+            var url = $"https://api.vk.com/method/docs.getById?docs={fullId}&access_token={token}&v=5.45";
+            var objs = await GetUrl(url);
+            if (objs?["response"] == null)
+            {
+                return null;
+            }
+            var docs = JsonConvert.DeserializeObject<List<Document>>(objs["response"].ToString());
+            return docs?.FirstOrDefault();
+        }
+
         public async Task<List<Photo>> GetPhotos(List<string> fullIds)
         {
             if (!fullIds.Any() || (fullIds.Count == 1 && fullIds[0] == string.Empty))
@@ -96,6 +113,26 @@ namespace vkAPI
             var photo = JsonConvert.DeserializeObject<List<Photo>>(objs["response"].ToString());            
             return photo.ToList();
         }
+
+        public async Task<Document> GetFirstDocumentByQuery(string query)
+        {
+
+            var url = $"https://api.vk.com/method/docs.search?access_token={_token}&v=5.45&q={query}";
+            var response = await GetUrl(url);
+            if (response?["items"] ==null)
+                return null;
+            try
+            {
+                var doc = JsonConvert.DeserializeObject<Document>(response["items"][0].ToString());
+                return doc;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+
     }
     
 }

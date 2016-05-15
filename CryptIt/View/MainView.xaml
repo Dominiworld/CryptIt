@@ -72,7 +72,8 @@
                 <ColumnDefinition Width="2*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <!-- Добавляем левый блок-->
+            <!-- 
+            авляем левый блок-->
             <Grid Grid.Row="0" Grid.Column="0">
                 <!-- Устанавливаем 2 строки -->
                 <Grid.RowDefinitions>
@@ -233,19 +234,19 @@
                                Visibility="{Binding IsConnectionFailed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="345">
-                        <Button Content="Добавить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
-                            Command="{Binding SetFriendKeyCommand}" 
+                        <Button Content="Запросить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
+                            Command="{Binding SendKeyRequestCommand}" 
                             Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource InvertBooleanToVisibilityCollapsedConverter}}">
-                            <Button.CommandParameter>
+                            <!--<Button.CommandParameter>
                                 <s:Boolean>False</s:Boolean>
-                            </Button.CommandParameter>
+                            </Button.CommandParameter>-->
                         </Button>
-                        <Button Content="Изменить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
-                            Command="{Binding SetFriendKeyCommand}"
+                        <Button Content="Повторно запросить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
+                            Command="{Binding SendKeyRequestCommand}"
                             Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Button.CommandParameter>
+                            <!--<Button.CommandParameter>
                                 <s:Boolean>True</s:Boolean>
-                            </Button.CommandParameter>
+                            </Button.CommandParameter>-->
                         </Button>
                         <Button Content="Выбрать файл" Margin="5" Width="105" Height="30" HorizontalAlignment="Center"
                             IsEnabled="{Binding IsSendButtonEnabled}" Command="{Binding UploadFileCommand}"/>
