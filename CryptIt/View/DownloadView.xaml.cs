@@ -11,7 +11,12 @@ namespace CryptIt.View
         public DownloadView()
         {
             InitializeComponent();
-            DataContext = new DownloadViewModel();
+            var model = new DownloadViewModel();
+            DataContext = model;
+            Closed += (sender, args) =>
+            {
+                model.CancelDownload();
+            };
         }
 
         

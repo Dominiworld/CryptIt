@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
@@ -13,13 +14,13 @@ namespace CryptIt.ViewModel
     public class DownloadViewModel : ViewModelBase
     {
         private readonly CryptTool _cryptTool = CryptTool.Instance;
+        private WebClient _client;
 
         public DownloadViewModel()
         {
             Files = new ObservableCollection<Attachment>();
             Files.CollectionChanged += DownloadFile;
             OpenFolderCommand = new DelegateCommand<Attachment>(OpenFolder);
-
         }
         public ObservableCollection<Attachment> Files { get; set; }
 
@@ -45,15 +46,20 @@ namespace CryptIt.ViewModel
 
         public async Task DownloadFile(Attachment file)
         {
-            using (var client = new WebClient())
+            using (_client = new WebClient())
             {
                 var fileName = file.File.FileName;
+
+                if (file.IsEncrypted)
+                {
+                    fileName = "crypt_download" + Files.Count(f => f.IsNotCompleted);
+                }
                 
-                client.DownloadProgressChanged += (o, e) =>
+                _client.DownloadProgressChanged += (o, e) =>
                 {
                     file.Progress = e.ProgressPercentage;
                 };
-                client.DownloadFileCompleted += (o, e) =>
+               _client.DownloadFileCompleted += (o, e) =>
                 {
                     if (file.IsEncrypted)
                     {
@@ -63,10 +69,29 @@ namespace CryptIt.ViewModel
                     }
                     file.IsNotCompleted = false;
                 };
-                await client.DownloadFileTaskAsync(file.File.Url, file.Path + "\\" + fileName);
 
+                try
+                {
+                    await _client.DownloadFileTaskAsync(file.File.Url, file.Path + "\\" + fileName);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
         }
+
+
+        public void CancelDownload()
+        {
+            if (_client!=null)
+            {
+                _client.CancelAsync();
+                _client.Dispose();
+            }
+        }
+       
+
 
     }
 }

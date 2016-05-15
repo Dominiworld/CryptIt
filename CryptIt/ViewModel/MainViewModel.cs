@@ -70,11 +70,7 @@ namespace CryptIt.ViewModel
             _longPollServer.ConnectToLongPollServer();
 
             Message = new Message();
-            DownloadView = new DownloadView();
-            DownloadView.Closed += (sender, args) =>
-            {
-                DownloadView = new DownloadView();
-            };
+            RenewDownloadView();
 
             SendMessageCommand = new DelegateCommand(SendMessage);
             UploadFileCommand = new DelegateCommand(OpenFileDialog);
@@ -368,7 +364,7 @@ namespace CryptIt.ViewModel
             }
             OnPropertyChanged(nameof(IsSendButtonEnabled));
 
-            var keysFileName = ConfigurationManager.AppSettings[_keysFolderNameInAppSetting] + "\\" + _keysFileName;
+            var keysFileName = _keysPath + "\\" + _keysFileName;
             if (changeExisting)
             {
                 var lines = new List<string>();
@@ -529,10 +525,11 @@ namespace CryptIt.ViewModel
                 Message.Attachments.Add(attachment);
                 OnPropertyChanged("Message");
 
-                var fileNameHash = _cryptTool.CreateHash(dialog.FileName);
+                var fileNameHash = _cryptTool.CreateHash(dialog.FileName)+".txt";
+                
                 var key = _cryptTool.EncryptFile(dialog.FileName, fileNameHash);
                 var uploadedFile = await UploadFile(fileNameHash, SelectedUser.Id, attachment);
-
+                File.Delete(fileNameHash);
                 if (uploadedFile == null)
                 {
                     Message.Attachments.Remove(attachment);
@@ -638,7 +635,6 @@ namespace CryptIt.ViewModel
         #region functions for messages
         private async void SendMessage()
         {
-            IsMessageSending = true;
             if (Message.Attachments != null && Message.Attachments.Any(a => a.IsNotCompleted))
             {
                 var errorDialog = MessageBox.Show("Подождите окончания загрузки");
@@ -652,6 +648,8 @@ namespace CryptIt.ViewModel
 
             try
             {
+                IsMessageSending = true;
+
                 if (string.IsNullOrEmpty(Message.Body) && (Message.Attachments == null || !Message.Attachments.Any()))
                     return;
                 if (!string.IsNullOrEmpty(Message.Body))
@@ -666,6 +664,7 @@ namespace CryptIt.ViewModel
                     };
                     var cryptedMessage = _cryptTool.MakingEnvelope(Message.Body);
                     Message.Body = cryptedMessage;
+
                     await _messageService.SendMessage(SelectedUser.Id, Message);
                     Message = new Message();
                     AddMessages(simpleMessage);
@@ -972,6 +971,15 @@ namespace CryptIt.ViewModel
             window.WebBrowser.Navigate(new Uri(AuthorizeService.Instance.GetAuthorizeUrl()));
             window.Show();
             OnClosingRequest();
+        }
+
+        private void RenewDownloadView()
+        {
+            DownloadView = new DownloadView();
+            DownloadView.Closed += (sender, args) =>
+            {
+                RenewDownloadView();
+            };
         }
     }
 }
