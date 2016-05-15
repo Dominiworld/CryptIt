@@ -48,10 +48,7 @@ namespace CryptIt.ViewModel
             using (var client = new WebClient())
             {
                 var fileName = file.File.FileName;
-                if (file.IsEncrypted)
-                {
-                    fileName = "crypt.crypt" + Files.Count(f => f.IsNotCompleted);
-                }
+                
                 client.DownloadProgressChanged += (o, e) =>
                 {
                     file.Progress = e.ProgressPercentage;

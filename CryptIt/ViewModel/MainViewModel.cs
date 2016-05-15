@@ -135,7 +135,6 @@ namespace CryptIt.ViewModel
                 OnPropertyChanged();
             }
         }
-        public int UploadingFilesAmount { get; set; }
         public bool IsMessageSending
         {
             get { return _isMessageSending; }
@@ -399,12 +398,10 @@ namespace CryptIt.ViewModel
                 Message.Attachments.Add(attachment);
                 OnPropertyChanged("Message");
 
-                UploadingFilesAmount++;
+                var fileNameHash = _cryptTool.CreateHash(dialog.FileName);
+                var key = _cryptTool.EncryptFile(dialog.FileName, fileNameHash);
+                var uploadedFile = await UploadFile(fileNameHash, SelectedUser.Id, attachment);
 
-                var key = _cryptTool.EncryptFile(dialog.FileName, "crypt.crypt" + UploadingFilesAmount);
-
-                var uploadedFile = await UploadFile("crypt.crypt" + UploadingFilesAmount, SelectedUser.Id, attachment);
-                UploadingFilesAmount--;
                 if (uploadedFile == null)
                 {
                     Message.Attachments.Remove(attachment);
