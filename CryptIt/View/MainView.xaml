@@ -15,7 +15,8 @@
         
     <!--Кароль величин-->
     <Window.InputBindings>
-        <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
+        <KeyBinding            
+            Key="Enter" Modifiers="Control" Command="{Binding SendMessageCommand}"></KeyBinding>
     </Window.InputBindings>
 
     <Window.Resources>

@@ -33,7 +33,7 @@ namespace vkAPI
             }
         }
 
-        public async Task<Document> UploadFile(string fileName, byte[] file, string tags = null) 
+        public async Task<Document> UploadFile(string fileName, byte[] file) 
         {
             using (var client = new System.Net.WebClient())
             {
@@ -42,16 +42,12 @@ namespace vkAPI
                 var j2 = JsonConvert.DeserializeObject(r2) as JObject;
                 if (j2["file"] == null)
                 {
-                    MessageBoxResult errorDialog = MessageBox.Show("Ошибка загрузки файла");
                     return null;
                 }
                 
                 var u3 = "https://api.vk.com/method/docs.save?v=5.45&access_token=" + _token
                          + "&file=" + j2["file"];
-                if (tags!=null)
-                {
-                    u3 += "&tags=" + tags;
-                }
+                         
                 var docObj = await GetUrl(u3);
                //todo проверка ошибки на капчу
                 var doc = JsonConvert.DeserializeObject<Document>(docObj["response"][0].ToString());
@@ -113,26 +109,6 @@ namespace vkAPI
             var photo = JsonConvert.DeserializeObject<List<Photo>>(objs["response"].ToString());            
             return photo.ToList();
         }
-
-        public async Task<Document> GetFirstDocumentByQuery(string query)
-        {
-
-            var url = $"https://api.vk.com/method/docs.search?access_token={_token}&v=5.45&q={query}";
-            var response = await GetUrl(url);
-            if (response?["items"] ==null)
-                return null;
-            try
-            {
-                var doc = JsonConvert.DeserializeObject<Document>(response["items"][0].ToString());
-                return doc;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-
     }
     
 }

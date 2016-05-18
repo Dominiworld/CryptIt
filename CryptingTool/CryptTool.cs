@@ -19,6 +19,7 @@ namespace CryptingTool
        public string _isCryptedFlag = "ъйьz";
        private string _desktopFlag = "h2m2";
        private string _mobileFlag = "h1m1";
+        private string _encryptedMessage = "Зашифрованное сообщение";
 
         public static CryptTool Instance { get; } = new CryptTool();
 
@@ -27,9 +28,6 @@ namespace CryptingTool
            keyRSARemote = null;
            keyRSAPublic = null;
            keyRSAPrivate = null;
-
-           //CreateRSAKey();
-           //keyRSARemote = keyRSAPrivate;
        }
         public void CreateRSAKey()
         {
@@ -262,8 +260,7 @@ namespace CryptingTool
         /// <returns></returns>
         public string SplitAndUnpackReceivedMessage(string message)
         {
-            if (keyRSARemote == null)
-                return message;
+            
             if (string.IsNullOrEmpty(message) || message.Length < _isCryptedFlag.Length)
             {
                 return message;
@@ -272,6 +269,9 @@ namespace CryptingTool
 
             if (des != _isCryptedFlag)
                 return message;
+
+            if (keyRSARemote == null)
+                return _encryptedMessage; 
 
             string des2 = message.Substring(_isCryptedFlag.Length, _desktopFlag.Length);
 
@@ -285,7 +285,7 @@ namespace CryptingTool
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
                 if (symmetricKey == encryptedSymmetricKey)
                 {
-                    return "Зашифрованное сообщение";
+                    return _encryptedMessage;
                 }
                 return Decrypt(receivedData, symmetricKey);
             }
@@ -300,7 +300,7 @@ namespace CryptingTool
                 string symmetricKey = DecryptString(encryptedSymmetricKey);
                 if (symmetricKey == encryptedSymmetricKey)
                 {
-                    return "Зашифрованное сообщение";
+                    return _encryptedMessage;
                 }
 
                 if (VerifySignature(receivedData, receivedSignature, receivedPubKey))
@@ -308,28 +308,7 @@ namespace CryptingTool
                     return Decrypt(receivedData, symmetricKey);
                 }
             }
-            return message;
-
-            //message = message.Substring(_isCryptedFlag.Length);
-            //message = message.FromBase64();
-
-            //byte[] receivedSignature = Encoding.Default.GetBytes(message.Substring(0, 64));
-            //byte[] receivedPubKey = Encoding.Default.GetBytes(message.Substring(64, 72));
-            //string encryptedSymmetricKey = message.Substring(136, 344);
-            //byte[] receivedData = Encoding.Default.GetBytes(message.Substring(480));
-            //string symmetricKey = DecryptString(encryptedSymmetricKey);
-            //if(symmetricKey==encryptedSymmetricKey)
-            //{
-            //   return message;
-            //}
-
-            //if (VerifySignature(receivedData, receivedSignature, receivedPubKey))
-            //{
-
-            //    return Decrypt(receivedData, symmetricKey);
-            //}
-
-            //return message;
+            return message; 
         }
         /// <summary>
         /// Шифровка сообщения

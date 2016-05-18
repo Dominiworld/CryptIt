@@ -45,7 +45,6 @@ namespace CryptIt.ViewModel
         private string _keysFileName = "keys.txt";
         private readonly string _keysFolderNameInAppSetting = "key_folder";
         private readonly string _requestKeyString = "Key request";
-        private readonly string _keyTag = $"crypt_it_key_{AuthorizeService.Instance.CurrentUserId}";
         private string _keysPath;
 
         private readonly CryptTool _cryptTool = CryptTool.Instance;
@@ -242,6 +241,19 @@ namespace CryptIt.ViewModel
             }
 
             _cryptTool.CreateRSAKey();
+
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            var settings = config.AppSettings.Settings;
+            var confName = "public_key_id";
+            var docIdPath = settings[confName];
+
+            if (docIdPath != null)
+            {
+                settings.Remove(confName);                
+                config.Save(ConfigurationSaveMode.Modified);
+            }
+
             var writer = new StreamWriter(path + "\\" + myPublicKeyFileName);
             writer.Write(myId + " " + Convert.ToBase64String(_cryptTool.keyRSAPublic));
             writer.Close();
@@ -306,12 +318,22 @@ namespace CryptIt.ViewModel
                 return;
             foreach (var attachment in message.Attachments)
             {
-                var fileName = attachment.File.FileName;
+                var fileName = attachment.File?.FileName;
+                if (fileName == null)
+                    continue;
                 if (fileName == message.UserId + _publicFileName)
                 {
                     using (var client = new WebClient())
                     {
-                        await client.DownloadFileTaskAsync(attachment.File.Url, fileName);
+                        try
+                        {
+                            await client.DownloadFileTaskAsync(attachment.File.Url, fileName);
+                        }
+                        catch (WebException)
+                        {
+                            MessageBox.Show("Ошибка загрузки файла с ключом. Попробуйте зайти в диалог еще раз.");
+                            return;
+                        }
                         SetFriendKey(SelectedUser.KeyExists, fileName);
                         File.Delete(fileName);
                     }                   
@@ -412,7 +434,7 @@ namespace CryptIt.ViewModel
                 {
                     return null;
                 }
-                return await _fileService.UploadFile(path, file, _keyTag);
+                return await _fileService.UploadFile(path, file);
             }
         }
 
@@ -441,14 +463,11 @@ namespace CryptIt.ViewModel
                     return;
 
                 //сохраняем id, чтобы потом файл с вк вытащить
-                if (docIdPath == null)
+                if (docIdPath!=null)
                 {
-                    settings.Add(confName, doc.Id.ToString());
+                    settings.Remove(confName);
                 }
-                else
-                {
-                    settings[confName].Value = doc.Id.ToString();
-                }
+                settings.Add(confName, doc.Id.ToString());
                 config.Save(ConfigurationSaveMode.Modified);
 
             }
@@ -490,7 +509,7 @@ namespace CryptIt.ViewModel
             }
 
             var id = AuthorizeService.Instance.CurrentUserId;
-            if (SetKeys(id+_publicFileName, "my_private.txt", settings[_keysFolderNameInAppSetting].Value))
+            if (SetKeys(id+_publicFileName, id+"_private.txt", settings[_keysFolderNameInAppSetting].Value))
             {
                 MessageBox.Show("Создана новая пара ключей. Пожалуйста, передайте свой публичный ключ собеседникам.");
             }
@@ -546,7 +565,6 @@ namespace CryptIt.ViewModel
         }
         private async Task<Document> UploadFile(string fileName, int userId, Attachment attachment)
         {
-
             using (var client = new WebClient())
             {
                 var url = await _fileService.GetUploadUrl(fileName);
@@ -635,6 +653,10 @@ namespace CryptIt.ViewModel
         #region functions for messages
         private async void SendMessage()
         {
+            if (!IsSendButtonEnabled)
+            {
+                return;
+            }
             if (Message.Attachments != null && Message.Attachments.Any(a => a.IsNotCompleted))
             {
                 var errorDialog = MessageBox.Show("Подождите окончания загрузки");
@@ -659,9 +681,10 @@ namespace CryptIt.ViewModel
                         Body = Message.Body,
                         UserId = SelectedUser.Id,
                         Out = true,
-                        Attachments = Message.Attachments
-
-                    };
+                        Attachments = Message.Attachments,
+                        UnixTime =(int) DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds,
+                        IsNotRead = true
+                   };
                     var cryptedMessage = _cryptTool.MakingEnvelope(Message.Body);
                     Message.Body = cryptedMessage;
 
@@ -680,16 +703,17 @@ namespace CryptIt.ViewModel
             }
         }
 
-
         private async Task GetMessages(User user)
         {
             var previousSelected = SelectedUser;
             try
             {
                 SelectedUser = user;
-                var messages = (await _messageService.GetDialog(SelectedUser.Id)).OrderBy(m => m.Date).ToList();
+                var query =(await _messageService.GetDialog(SelectedUser.Id)).ToList();
 
-                PraseMessages(messages);
+                PraseMessages(query);
+
+                var messages = query.OrderBy(m => m.Date).ToList();
 
                 foreach (var message in messages.ToArray())
                 {
@@ -824,7 +848,6 @@ namespace CryptIt.ViewModel
         }
         private async void AddMessages(Message message)
         { 
-
             if (message.Out && message.Body.StartsWith(_cryptTool._isCryptedFlag)) //не выводим свое отправленное зашифрованное сообщение - незачем
                 return;
 
@@ -980,6 +1003,6 @@ namespace CryptIt.ViewModel
             {
                 RenewDownloadView();
             };
-        }
+        }    
     }
 }
