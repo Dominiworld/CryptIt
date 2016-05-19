@@ -242,7 +242,7 @@
                                 <s:Boolean>False</s:Boolean>
                             </Button.CommandParameter>-->
                         </Button>
-                        <Button Content="Повторно запросить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
+                        <Button Content="Обновить ключ" Margin="5" Height="30" Width="105"  HorizontalAlignment="Center"
                             Command="{Binding SendKeyRequestCommand}"
                             Visibility="{Binding SelectedUser.KeyExists, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <!--<Button.CommandParameter>
